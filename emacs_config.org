@@ -1,0 +1,1220 @@
+#+TITLE: Tianshuo's emacs setup
+#+OPTIONS: toc:4
+#+PROPERTY: header-args :tangle ~/.emacs.d/init.el :comments org
+#+STARTUP: overview
+* Initial Config
+This emacs config file is written using "Literate Programming", in the .emacs
+file, =(org-babel-load-file "~/.emacs.d/init.org")= will load the e-lisp code in
+this file.
+
+Manually maintained lisp files are in the ~/.emacs.d/lisp folder.
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/lisp/")
+#+END_SRC
+
+* Repository of Packages
+** Melpa
+#+BEGIN_SRC emacs-lisp
+  ;; enable packages
+  (require 'package) ;; You might already have this line
+;;    (add-to-list 'package-archives
+;;                 '("melpa" . "https://melpa.org/packages/"))
+  (add-to-list 'package-archives
+               '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+    ;; (when (< emacs-major-version 24)
+    ;;   ;; For important compatibility libraries like cl-lib
+  ;;    (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))) 
+  (package-initialize) ;; You might already have this line
+#+END_SRC
+
+** Auto install packages
+Macros and functions to support install a plugin
+#+BEGIN_SRC emacs-lisp
+    (defun check-package-install (package-name)
+      (if (package-installed-p package-name)
+          (progn
+            (message "%s is installed :)" package-name)
+            t
+            )
+        (progn
+          (if (y-or-n-p (format "install %s" package-name))
+              (progn
+                (message "installing %s ..." package-name)
+                (unless package-archive-contents
+                  (package-refresh-contents))
+                (package-install package-name)
+                t
+                )
+            (progn
+              (message "skipping install %s" package-name)
+              nil
+              )
+            )
+          )
+        )
+      )
+
+  (defun check-install (package-name &optional func)
+    (interactive)
+    (if 
+        (cond ((listp package-name)
+               (progn
+                 (cl-reduce (lambda (x y) (and x y)) (cl-map 'list 'check-package-install package-name) :initial-value t)
+                 )
+               )
+              ((symbolp package-name)
+               (check-package-install package-name)
+               )
+              )
+
+        (if func
+            (funcall func)) ;; if all installed
+      (message "Not installed %s, ignoring func" package-name)
+        );;if
+    )
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+;; test
+;;(check-install (list 'scala-mode 'scala-mode3) (lambda() (message "go!!!")))
+;;(check-install 'scala-mode3 (lambda() (message "go!!!")))
+
+#+END_SRC
+** pkg-info
+#+BEGIN_SRC emacs-lisp
+  (check-install 'pkg-info)
+#+END_SRC
+
+* Literate Programming
+Making sure fonts in the code block is proper highlighted; Disable confirmation when executing a code block when =C-c C-c=
+#+BEGIN_SRC emacs-lisp
+(with-eval-after-load 'org
+  (setq org-confirm-babel-evaluate nil
+        org-src-fontify-natively t
+        org-src-tab-acts-natively t))
+
+#+END_SRC
+
+Add languages supports
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '(
+       (emacs-lisp . t)
+       (sql . t)
+       )))
+#+END_SRC
+
+* Basic Emacs Configuration
+** Disable Startup message
+#+BEGIN_SRC emacs-lisp
+  ;;(setq inhibit-startup-message t)
+#+END_SRC
+
+Following settings are for all emacs built in functions, not from external plugins/modules
+** Terminal Mouse
+#+BEGIN_SRC emacs-lisp
+(xterm-mouse-mode 1)
+#+END_SRC
+** Splash screen show bookmarks
+#+BEGIN_SRC emacs-lisp
+;;(setq initial-buffer-choice (lambda () (list-bookmarks) (get-buffer "*Bookmark List*")))
+#+END_SRC
+** Temp File settings
+#+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist
+        `((".*" . ,temporary-file-directory)))
+  (setq auto-save-file-name-transforms
+        `((".*" ,temporary-file-directory t)))
+   ;; fix 'controll path too long' issue when using tramp
+   (setenv "TMPDIR" "/tmp")
+#+END_SRC
+
+** Desktop settings
+#+BEGIN_SRC emacs-lisp
+(with-eval-after-load 'desktop
+  (setq desktop-restore-frames t)
+  (setq desktop-restore-in-current-display t)
+  (setq desktop-restore-forces-onscreen nil))
+#+END_SRC
+
+** Keep buffer in sync with file on disk
+#+BEGIN_SRC emacs-lisp
+  (global-auto-revert-mode t)
+  (global-set-key (kbd "<f5>") 'revert-buffer)
+#+END_SRC
+
+** Clipboard, copy/paste
+#+BEGIN_SRC emacs-lisp
+  ;; Following code are deprecated, since osc52 seems to be a more portable and
+  ;; universal solution. osc52 use escape code to send content to paste
+  ;; board. Following terminals support osc52:
+  ;; Linux -> Chrome's Secure Shell
+  ;; OSX -> iTerm or Chrome's Secure Shell
+
+  ;; Only in very special cases where you want to copy to the system clipboard
+  ;; directly, call following function
+  ;; (xclip-mode 1)
+  ;; (osc-clipboard-mode +1)
+
+  ;;  (if (string-equal system-type "darwin")
+  ;;      (check-install 'osx-clipboard (lambda()
+  ;;                                      (osx-clipboard-mode +1))))
+  ;;
+  ;;  (if (string-equal system-type "gnu/linux")
+  ;;      (check-install 'xclip' (lambda()
+  ;;                               (require 'xclip)
+  ;;                               (turn-on-xclip)
+  ;;                               )))
+
+  ;;; Code:
+  (defun clip-use-osx ()
+    "Copy to osx's clipboard directly, this is useful for osx's terminal \
+  which does not support osc52"
+    (interactive)
+    (check-install 'osx-clipboard (lambda()
+                                    (osx-clipboard-mode +1))))
+;;  (defun clip-use-xclip ()
+;;    "Copy to linux's paste board directly with xclip, need to make sure xclip \
+;;  is installed on the system.  This is useful only when using gnome-terminal \
+;;  which does not support osc52"
+;;    (interactive)
+;;    (check-install 'xclip (lambda()
+;;                            (require 'xclip)
+;;                            (xclip--setup))))
+  (defun in-ssh ()
+    (interactive)
+    "if I'm in ssh"
+    (not (null (getenv "SSH_TTY")))
+    )
+
+  (defun clip-use-osc52 ()
+    "Use osc52 to paste, should support remote terminal, even within tmux.  In \
+  unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
+  escape characters being displayed on the screen"
+    (interactive)
+    (require 'osc52e)
+    (osc52-set-cut-function))
+
+
+  ;; default to using osc52
+;;  (clip-use-osc52)
+;;  (if (in-ssh)
+;;      (progn
+;;        (message "in ssh, using osc52")
+;;        (clip-use-osc52)
+;;        )
+;;    (progn
+;;      (message "not in ssh, use xclip")
+;;      (clip-use-xclip)
+;;      )
+;;    )
+
+
+#+END_SRC
+** Click link behavior
+You don't always want to open the link when click on it, especially when in a
+remote emacs session, since it will open the browser in remote host.
+#+BEGIN_SRC emacs-lisp
+  ;; browse to cut. By default, if you click a link in org mode in emacs, it will
+  ;; open the browser on the machine where emacs was launched. This means if you
+  ;; ssh/tmux into a server, clicking the org link will open a new window on the
+  ;; server but not the client machine, so on the client you will see nothing
+  ;; happened. When calling browse-to-cut, it will set the
+  ;; browse-url-broser-function to cut the link into pasteboard, instead of
+  ;; opening the browser. This is useful since you can just paste the url into a
+  ;; browser on the client side.
+
+  (defun url-to-pasteboard (url &rest args)
+    (message "pasteboard < %s" url)
+    (kill-new url)
+    )
+
+  (defun browse-to-cut ()
+    "Cut to clipboard when clicking on a link"
+    (interactive)
+    (setq browse-url-browser-function 'url-to-pasteboard)
+    )
+
+  (defun browse-to-open ()
+    "revert browse-to-cut"
+    (interactive)
+    (setq browse-url-browser-function 'browse-url-default-browser)
+    )
+  (browse-to-cut)
+#+END_SRC
+
+** Scroll with arrow keys
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [up] (lambda () (interactive) (scroll-down 1)))
+  (global-set-key [down] (lambda () (interactive) (scroll-up 1)))
+#+END_SRC
+
+** Center Cursor Mode
+Just call =centered-cursor-mode=, it's an autoload function.
+
+** Fix PATH when executing a shell command within GUI emacs
+#+BEGIN_SRC emacs-lisp
+  (check-install 'exec-path-from-shell
+                 (lambda () (when (memq window-system '(mac ns))
+                    (exec-path-from-shell-initialize)))) ;; fix shell command when launched from GUI emacs
+#+END_SRC
+
+** Support search multiple words
+#+BEGIN_SRC emacs-lisp
+  (setq search-whitespace-regexp ".*?") ;; support search multiple words
+#+END_SRC
+
+** Always follow symlink
+#+BEGIN_SRC emacs-lisp
+  (setq vc-follow-symlinks t) ;; always follow symlink
+#+END_SRC
+
+** Recent files buffer
+#+BEGIN_SRC emacs-lisp
+  (require 'recentf)
+  (recentf-mode t) ;; enable recent files mode.
+  (setq recentf-max-saved-items 50)
+#+END_SRC
+
+** Hide toolbar and scroll bar
+#+BEGIN_SRC emacs-lisp
+  (setq-default frame-title-format "%b (%f)")
+  (if window-system (progn
+                      (tool-bar-mode -1)
+                      (scroll-bar-mode -1)
+                      )) ;; hide toolbar in gui mode
+#+END_SRC
+
+** No tabs
+tabs makes things hard when different ppl have different tab-width
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+
+** Show matching parenthesis
+#+BEGIN_SRC emacs-lisp
+  (show-paren-mode 1) ;; show matching paren
+  (defadvice show-paren-function
+      (after show-matching-paren-offscreen activate)
+    "If the matching paren is offscreen, show the matching line in the
+        echo area. Has no effect if the character before point is not of
+        the syntax class ')'."
+    (interactive)
+    (let* ((cb (char-before (point)))
+           (matching-text (and cb
+                               (char-equal (char-syntax cb) ?\})
+                                 (blink-matching-open))))
+        (when matching-text (message matching-text))))
+#+END_SRC
+
+** Highlight current line
+#+BEGIN_SRC emacs-lisp
+  ;; (set-face-foreground 'highlight nil)
+  ;; (global-hl-line-mode 1)
+  ;; (global-visual-line-mode 1)
+#+END_SRC
+
+** Automatic indent and insert parenthesis
+#+BEGIN_SRC emacs-lisp
+  (electric-indent-mode +1)
+  (electric-pair-mode +1)
+#+END_SRC
+
+** Remember last location for each file
+#+BEGIN_SRC emacs-lisp
+(save-place-mode 1) 
+#+END_SRC
+
+** Repeat command
+Press C-s ooo... to jump between windows
+#+BEGIN_SRC emacs-lisp
+  (check-install 'repeat
+                 (lambda()
+                   (require 'repeat)
+                   (defun make-repeatable-command (cmd)
+                     "Returns a new command that is a repeatable version of CMD.
+      The new command is named CMD-repeat.  CMD should be a quoted
+      command.
+
+      This allows you to bind the command to a compound keystroke and
+      repeat it with just the final key.  For example:
+
+        (global-set-key (kbd \"C-c a\") (make-repeatable-command 'foo))
+
+      will create a new command called foo-repeat.  Typing C-c a will
+      just invoke foo.  Typing C-c a a a will invoke foo three times,
+      and so on.
+
+      See related discussion here: 
+      http://batsov.com/articles/2012/03/08/emacs-tip-number-4-repeat-last-command/#comment-459843643
+      https://groups.google.com/forum/?hl=en&fromgroups=#!topic/gnu.emacs.help/RHKP2gjx7I8"
+                     (fset (intern (concat (symbol-name cmd) "-repeat"))
+                           `(lambda ,(help-function-arglist cmd) ;; arg list
+                              ,(format "A repeatable version of `%s'." (symbol-name cmd)) ;; doc string
+                              ,(interactive-form cmd) ;; interactive form
+                              ;; see also repeat-message-function
+                              (setq last-repeatable-command ',cmd)
+                              (repeat nil)))
+                     (intern (concat (symbol-name cmd) "-repeat")))
+
+                   (global-set-key (kbd "C-x o") (make-repeatable-command 'other-window))
+                   (global-set-key (kbd "C-c <left>") (make-repeatable-command 'winner-undo))
+                   ))
+#+END_SRC
+
+** =C-]= expand-region
+#+BEGIN_SRC emacs-lisp
+  (check-install 'expand-region (lambda () (global-set-key (kbd "C-]") 'er/expand-region)))
+#+END_SRC
+
+** Writeroom for focus writing
+#+BEGIN_SRC emacs-lisp
+  (check-install 'writeroom-mode (lambda()
+                              (global-set-key (kbd "C-x RET") 'writeroom-mode)
+                              ))
+#+END_SRC
+* Themes
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+
+#+END_SRC
+* Dashboard
+#+BEGIN_SRC emacs-lisp
+;;(require 'dashboard)
+;;(dashboard-setup-startup-hook)
+#+END_SRC
+* Helm
+#+BEGIN_SRC emacs-lisp
+  (check-install 'helm (lambda()
+                  ;;(require 'helm-config)
+                  ;; try to use helm's autoload to reduce startup time
+                  (helm-mode 1) ;; This function is costly, but damn... helm is too good
+                  (global-set-key (kbd "C-x C-f")  'helm-find-files)
+                  (global-set-key (kbd "M-s") 'helm-swoop)
+                  (global-set-key (kbd "M-x") 'helm-M-x)
+
+                  (defun auto-helm-projectile ()
+                    "enbale projectile on demand"
+                    (interactive)
+                    (projectile-mode t)
+                    (helm-projectile)
+                    )
+                  (global-set-key (kbd "C-c h p") 'auto-helm-projectile)
+                  (setq projectile-enable-caching t)
+
+                  (setq helm-command-prefix-key nil)
+                  (setq helm-split-window-in-side-p t)
+                  (setq helm-swoop-split-with-multiple-windows t)
+                  (global-set-key (kbd "C-x C-r") 'helm-recentf)
+                  ))
+  (check-install 'helm-projectile)
+#+END_SRC
+
+* Dired
+Add useful command shortcuts
+#+BEGIN_SRC emacs-lisp
+(require 'dired)
+(define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
+(define-key dired-mode-map "k" 'dired-kill-subdir)
+#+END_SRC
+* Search & Jump
+** Repeatly pop marks
+C-u C-SPC C-SPC... to keep poping marks
+#+BEGIN_SRC emacs-lisp
+  (setq set-mark-command-repeat-pop t)
+#+END_SRC
+** imenu for inbuffer navigation
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "<f12>") 'imenu)
+#+END_SRC
+** ace-jump-mode
+#+BEGIN_SRC emacs-lisp
+  (check-install 'ace-jump-mode (lambda () (global-set-key (kbd "C-c j") 'ace-jump-mode)))
+#+END_SRC
+** Semantic mode, jump to definition
+semantic mode is included in emacs by default.
+http://tuhdo.github.io/c-ide.html#sec-2
+
+#+BEGIN_SRC emacs-lisp
+;;  (add-hook 'c-mode-common-hook (lambda ()
+;;                                  (semantic-mode)
+;;                                  (define-key semantic-mode-map (kbd "M-.") 'semantic-ia-fast-jump)                                
+;;                                  ))
+#+END_SRC
+
+** Highlight symbol under cursor, and jump to next one
+#+BEGIN_SRC emacs-lisp
+  (check-install 'highlight-symbol (lambda () 
+                                           (global-set-key (kbd "M-n") 'highlight-symbol-next)
+                                           (global-set-key (kbd "M-p") 'highlight-symbol-prev)
+                                           (global-set-key (kbd "C-c h s") 'highlight-symbol)
+                                           ))
+#+END_SRC
+
+* Grep, find
+** find-dired
+| execute 'find' command and display result in a dired buffer | M-x find-dired |
+** =C-x g= pgrep
+#+BEGIN_SRC emacs-lisp
+  (defun get-current-file-dir ()
+    (file-name-directory (buffer-file-name))
+    )
+
+  (defun get-grep-location ()
+    (if (boundp 'grep-location)
+        (if (string-prefix-p (get-current-file-dir) grep-location) ;;handle jumping to another project
+            grep-location
+          (setq grep-location (get-current-file-dir))) ;;use the root directory of new project as search location
+      (setq grep-location (get-current-file-dir)))
+    )
+
+  (defun pgrep-buffer-extension ()
+    (file-name-extension (buffer-file-name))
+    )
+
+  (defun pgrep-get-name-pattern()
+    (if (pgrep-buffer-extension)
+        (concat "*." (pgrep-buffer-extension))
+      (read-string "file name pattern:")))
+     
+  (defun pgrep-get-what-to-grep()
+    (if (use-region-p)
+        (buffer-substring (region-beginning) (region-end))
+      (read-string "what to grep: ")))
+        
+  (defun pgrep (location file-pattern re)
+    (interactive
+     (list
+      (read-directory-name "location to search: " (get-grep-location))
+      (pgrep-get-name-pattern)
+      (pgrep-get-what-to-grep))
+     )
+    (setq grep-location location)
+    (let ((default-directory grep-location))
+    (grep (concat  "find . -name \"" file-pattern "\" | xargs grep -n -e " re)))
+    )
+
+;;  (define-key global-map "\C-xg" 'pgrep)
+#+END_SRC
+** better find-grep
+1. Let user construct find command and grep command separately in 2 steps
+
+#+BEGIN_SRC emacs-lisp
+  (defun better-find-grep ()
+    (interactive)
+    (let* ((find-location (read-directory-name "(1/3) dir to find-grep: "))
+           (default-directory find-location)
+           (find-cmd (read-string (concat "(2/3) find command(at " default-directory "): ") (cons (concat "find . -type f -print0") 16)))
+           (grep-cmd (read-string "(3/3) grep command: " "grep -nH -e "))
+           (final-cmd (concat find-cmd " | xargs -0 " grep-cmd))
+           )
+      (grep-find final-cmd)
+      )
+    )
+
+  (define-key global-map "\C-xg" 'better-find-grep)
+#+END_SRC
+** projectile
+#+BEGIN_SRC emacs-lisp
+  (check-install 'projectile)
+#+END_SRC
+** =M-s= helm-swoop
+#+BEGIN_SRC emacs-lisp
+    (check-install 'helm-swoop)
+#+END_SRC
+** ag - the silver searcher
+#+BEGIN_SRC emacs-lisp
+  (check-install 'ag (lambda ()
+                  (with-eval-after-load 'ag
+                      (message "ag config loaded")
+                      (setq ag-reuse-buffers t)
+                      (setq ag-reuse-window t))
+
+                  (defun mag/get-ag-location ()
+                    (if (or current-prefix-arg (not (boundp 'mag/last-ag-location)))
+                        (progn ;; if has prefix, as for location and remember it
+                          (message "reset memoized location")
+                          (setq mag/last-ag-location (read-directory-name "Directory: "))
+                          (setq current-prefix-arg nil) ;; unset current-prefix-arg
+                          mag/last-ag-location
+                          )
+                      mag/last-ag-location
+                      )
+                    )
+
+                  (defun mag/get-ag-string (directory)
+                    (if (use-region-p)
+                        (buffer-substring (region-beginning) (region-end))
+                      (ag/read-from-minibuffer (format "Search string in %s" directory))
+                      )
+                    )
+
+                  (defun ag-with-memory ()
+                    "ag that remembers last location where it's executed, call with prefix to forget the last searched location"
+                    (interactive)
+                    (require 'ag)
+                    (let* ((directory (mag/get-ag-location))
+                           (string (mag/get-ag-string directory))
+                           )
+                      (ag/search string directory)
+                      )
+                    )
+                  (define-key global-map "\C-cs" 'ag-with-memory)
+
+                  ))
+#+END_SRC
+
+* Compile
+** <f6> compile highlight errors
+#+BEGIN_SRC emacs-lisp
+  ;; bug in emacs! https://groups.google.com/forum/#!topic/gnu.emacs.bug/4t3reC82lqc
+  ;; (setq compilation-auto-jump-to-first-error t)
+  (setq next-error-highlight t)
+  (setq next-error-follow-minor-mode t)
+  (add-hook 'compliation-minor-mode-hook 'next-error-follow-minor-mode)
+  (global-set-key (kbd "<f6>") 'compile)
+#+END_SRC
+** Auto-compile
+#+BEGIN_SRC emacs-lisp
+  (defun auto-compile-func ()
+    (recompile)
+    )
+
+  (defun auto-compile-on()
+    "run compile after saving buffer"
+    (interactive)
+    (add-hook 'after-save-hook
+              'auto-compile-func t t)
+    )
+  (defun auto-compile-off()
+    "turn off auto export pdf"
+    (interactive)
+      (remove-hook 'after-save-hook
+                   'auto-compile-func t)
+      )
+#+END_SRC
+** Make compile-command a bufffer local variable
+#+BEGIN_SRC emacs-lisp
+  (defun make-local-compile-command ()
+    (set (make-local-variable 'compile-command)
+              (concat "make -k "
+                      (if buffer-file-name
+                          (shell-quote-argument
+                           (file-name-nondirectory (file-name-sans-extension buffer-file-name))))))
+    )
+
+  (add-hook 'c-mode-hook 'make-local-compile-command)
+  (add-hook 'java-mode-hook 'make-local-compile-command)
+#+END_SRC
+** Flymake, =C-c C-v= to show next error
+#+BEGIN_SRC emacs-lisp
+  ;; Customize how flymake displays the errors
+(with-eval-after-load 'flymake 
+  '(flymake-errline ((((class color)) (:underline "OrangeRed"))))
+  '(flymake-warnline ((((class color)) (:underline "yellow"))))
+
+  ;; Define our own flymake error function
+  (defun my-flymake-show-next-error ()
+    (interactive)
+    (flymake-goto-next-error)
+    (flymake-display-err-menu-for-current-line))
+  ;; And set it to the shortcut C-c C-v
+  ;; (add-hook 'c-mode-common-hook
+  ;;   (lambda ()
+  ;;     (flymake-mode t)
+  ;;    (global-set-key "\C-c\C-v" 'my-flymake-show-next-error))) ;
+)
+
+#+END_SRC
+* Python
+#+BEGIN_SRC emacs-lisp
+    (check-install (list 'anaconda-mode 'company 'company-anaconda 'py-autopep8) (lambda()
+                                                    (with-eval-after-load 'python
+                                                      (message "python setup is done!!!!")
+                                                      (add-hook 'python-mode-hook
+                                                                (lambda ()
+                                                                  (flycheck-mode 1)
+                                                                  (anaconda-mode 1)
+                                                                  (company-mode 1) ;; auto complete
+                                                                  (electric-indent-local-mode -1) ;; disable auto indent, since auto indent inserts tab for empty lines. flake8 complains about it
+                                                                  (add-to-list 'company-backends 'company-anaconda) ;; add-to-list will only add when it's not there
+                                                                  (py-autopep8-enable-on-save)
+                                                                  ))
+                                                      )
+                                                    ))
+#+END_SRC
+
+By default, flycheck uses python-pylint as checker.
+
+Some key concepts of style checking for python
+- PEP 8: [[https://www.python.org/dev/peps/][PEP]] is short for "Python Enhancement Proposals", think of it as a document group. PEP 8 is a proposal about style guide for python code.
+- pep8: a tool to check your code style according to PEP 8. Anaconda installs pep8 automatically.
+- pyflake: not a style checking tool. It verifies logistic errors, things like: "imported but unused"
+- flake8: a wrapper of pep8 and pyflake.
+- pylint: similar to pep8, but has more verification items and options
+
+To beautify your python file, 
+
+* C and CPP IDE
+** Rtags
+*** Auto completion and diagnostics(highlighting errors)
+https://github.com/Andersbakken/rtags
+Following configurations are from the "Code completion in Emacs" section.
+#+BEGIN_SRC emacs-lisp
+    ;; rtag company for auto completion
+    (defun rtags-auto-complete-setup ()
+          (require 'rtags)
+          (require 'company)
+          (rtags-start-process-unless-running)
+          (setq rtags-autostart-diagnostics t)
+          (rtags-diagnostics)
+          (setq rtags-completions-enabled t)
+          (push 'company-rtags company-backends)
+          (company-mode 1)
+          (rtags-enable-standard-keybindings)  
+          (define-key c-mode-base-map (kbd "<C-tab>") (function company-complete))
+          )
+
+  (defcustom use-rtags t
+    "Use rtags? Might not want to use it if you have other backend for code indexing"
+    :group 'tianshuo-setup
+    :type 'boolean)
+
+  (if use-rtags
+      (check-install (list 'company 'rtags 'company-rtags) (lambda ()
+                                                             (message "enabling rtags setup")
+                                                             (add-hook 'c-mode-hook 'rtags-auto-complete-setup)
+                                                             (add-hook 'c++-mode-hook 'rtags-auto-complete-setup)
+                                                             )))
+#+END_SRC
+*** Integrating RTags with Flycheck
+Actually may be rtags-diagnoistics is awesome enough!
+#+BEGIN_SRC emacs-lisp
+  (defun my-flycheck-rtags-setup ()
+    (require 'flycheck-rtags)  
+    (flycheck-select-checker 'rtags)
+    (setq-local flycheck-highlighting-mode nil) ;; RTags creates more accurate overlays.
+    (setq-local flycheck-check-syntax-automatically nil)
+    (flycheck-mode 1)
+    )
+
+  (if use-rtags
+      (check-install 'flycheck-rtags (lambda()
+                                       (add-hook 'c-mode-hook #'my-flycheck-rtags-setup)
+                                       (add-hook 'c++-mode-hook #'my-flycheck-rtags-setup)
+                                       (add-hook 'objc-mode-hook #'my-flycheck-rtags-setup)    
+                                       )))
+#+END_SRC
+
+*** run rc to tell rdm how to compile your project
+Run make -nk | rc -c -
+
+Then run-rc function defined below will run the Make command for you
+#+BEGIN_SRC emacs-lisp
+  (defun find-make-file ()
+    (interactive)
+    (message (or
+              (locate-dominating-file (buffer-file-name) "Makefile") ;; rdm uses Makefile to detect project root!!
+              (locate-dominating-file (buffer-file-name) "makefile")) ;; not sure if rdm recognize 'makefile'
+             )
+    )
+  (defun run-rc ()
+    (interactive)
+    (let ((make-dir (find-make-file)))
+      (if make-dir
+          (progn
+            (message (concat "will run: make -Bnp " make-dir))
+            (let* ((default-directory make-dir)
+                   (make-cmd (read-string (concat make-dir " $") "make -Bnk | rc -c -"))
+                   )
+              (shell-command make-cmd "*rc-output*")
+              (rtags-stop-diagnostics)  ;; restart rtags diagnostics to pick up the change
+              (rtags-diagnostics)
+              )
+            )
+        (message "[WARNING]can not find make file, abort! rtags may not recognize the project root correctly")
+        )
+      )
+    )
+
+#+END_SRC
+
+*** Keybindings
+
+| Keybinding prefixed  by(C-c r) | Function                         |
+|--------------------------------+----------------------------------|
+| .                              | find symbol at point, definition |
+| >                              | find symbol by name              |
+| <                              | find references                  |
+|                                |                                  |
+|                                |                                  |
+
+#+BEGIN_SRC emacs-lisp
+  (check-install 'rtags (lambda ()
+                  (with-eval-after-load 'rtags
+                  (rtags-enable-standard-keybindings))
+  ))
+#+END_SRC
+
+* Window Management
+** Prevent emacs from splitting windows aggresively
+http://blog.mpacula.com/2012/01/28/howto-prevent-emacs-from-splitting-windows/
+#+BEGIN_SRC emacs-lisp
+(setq split-height-threshold 2000)
+(setq split-width-threshold 2000)
+#+END_SRC
+
+** Desktop save current session
+Super useful function:
+- save-desktop-in-desktop-dir, will save the desktop in current working dir
+- desktop-change-dir, load the desktop file from selected folder
+#+BEGIN_SRC emacs-lisp
+(setq desktop-path '("~" "~/.emacs.d/"))
+#+END_SRC
+** Winner mode
+#+BEGIN_SRC emacs-lisp
+  (when (fboundp 'winner-mode)
+    (winner-mode 1))
+#+END_SRC
+** Ace window
+#+BEGIN_SRC emacs-lisp
+  (check-install 'ace-window (lambda ()
+                  (global-set-key (kbd "C-x o") 'ace-window)
+  ))
+#+END_SRC
+
+** Switch buffer using Command-Return
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "s-b") 'switch-to-buffer)
+#+END_SRC
+** Jump to window configuration using Command keys
+#+BEGIN_SRC emacs-lisp
+
+  (global-set-key (kbd "s-o") 'ace-window)
+  (global-set-key (kbd "s-<left>") 'winner-undo)
+  (global-set-key (kbd "s-<right>") 'winner-redo)
+
+  (global-set-key (kbd "s-f") 'helm-find-files)
+
+  (global-set-key (kbd "M-1") (lambda() (interactive) (window-configuration-to-register ?1)))
+  (global-set-key (kbd "M-2") (lambda() (interactive) (window-configuration-to-register ?2)))
+  (global-set-key (kbd "M-3") (lambda() (interactive) (window-configuration-to-register ?3)))
+
+  (global-set-key (kbd "s-1") (lambda() (interactive) (jump-to-register ?1)))
+  (global-set-key (kbd "s-2") (lambda() (interactive) (jump-to-register ?2)))
+  (global-set-key (kbd "s-3") (lambda() (interactive) (jump-to-register ?3)))
+ 
+#+END_SRC
+
+** Ace Window jump to a specific window
+#+BEGIN_SRC emacs-lisp
+(check-install 'ace-window (lambda ()
+  (global-set-key (kbd "C-x w") 'ace-window)
+))
+#+END_SRC
+
+** Zoom window like tmux with C-c z
+#+BEGIN_SRC emacs-lisp
+  (check-install 'zoom-window (
+                               lambda ()
+                                      (global-set-key (kbd "C-c z") 'zoom-window-zoom)
+                                      ))
+#+END_SRC
+* Terminal
+*** Press F2 to create a term buffer or rename an existing buffer
+#+BEGIN_SRC emacs-lisp
+  (require 'ansi-color)
+  (defun colorize-compilation-buffer ()
+    (toggle-read-only)
+    (ansi-color-apply-on-region (point-min) (point-max))
+    (toggle-read-only))
+  (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+  (setq compilation-scroll-output t)
+  ;;disable hl mode for terminal
+  (add-hook 'term-mode-hook (lambda ()
+                              (setq-local global-hl-line-mode
+                                          nil)))
+
+  (defadvice ansi-term (after advice-term-line-mode activate)
+    (visual-line-mode -1) ;; avoid weird line wrapping issue
+    (goto-address-mode) ;; make link clickable
+    (yas-minor-mode -1) ;; tab expansion of yas could mess up the terminal, see https://github.com/joaotavora/yasnippet/issues/289
+    )
+
+  (require 'term)
+  (defun visit-ansi-term ()
+    "If the current buffer is:
+  1) a running ansi-term named *ansi-term*, rename it.
+  2) a stopped ansi-term, kill it and create a new one.
+  3) a non ansi-term, go to an already running ansi-term
+     or start a new one while killing a defunt one"
+    (interactive)
+    (let ((is-term (string= "term-mode" major-mode))
+          (is-running (term-check-proc (buffer-name)))
+          (term-cmd "/bin/bash")
+          (anon-term (get-buffer "*ansi-term*")))
+      (if is-term
+          (if is-running
+              (if (string= "*ansi-term*" (buffer-name))
+                  (call-interactively 'rename-buffer)
+                (if anon-term
+                    (switch-to-buffer "*ansi-term*")
+                  (ansi-term term-cmd)))
+            (kill-buffer (buffer-name))
+            (ansi-term term-cmd))
+        (if anon-term
+            (if (term-check-proc "*ansi-term*")
+                (switch-to-buffer "*ansi-term*")
+              (kill-buffer "*ansi-term*")
+              (ansi-term term-cmd))
+          (ansi-term term-cmd)))))
+  (global-set-key (kbd "<f2>") 'visit-ansi-term)
+
+#+END_SRC
+*** C-c C-y to paste
+#+BEGIN_SRC emacs-lisp
+(with-eval-after-load "term"
+  (define-key term-raw-map (kbd "C-c C-y") 'term-paste))
+#+END_SRC
+* Bookmark
+** Always persist bookmarks to disk
+#+BEGIN_SRC emacs-lisp
+  (setq bookmark-save-flag 1)
+#+END_SRC
+* Git
+** magit
+[[https://magit.vc/manual/magit.html][Magit User Manual]]
+*** Basic config
+#+BEGIN_SRC emacs-lisp
+  (check-install 'magit (lambda ()
+  (global-set-key (kbd "C-c g") 'magit-status)
+  (global-set-key (kbd "C-c M-g") 'magit-dispatch-popup)))
+#+END_SRC
+
+*** magit-status
+| Starting point, magit-status | C-c g |
+| Delete file                  | k     |
+
+*** List command/popups in magit-status buffer
+In magit-status, you can press a key to bring up a popup to complish certain command, e.g 'c' will bring 'commit' pop-up.
+To get a list of pop-ups:
+| show popup of popups | press 'h' in magit buffer |
+*** Check unstaged changes
+Launch magit status, then use following bindings
+| Move between sections/files                          | n or p |
+| Expand or collapse section to see diff for each file | TAB    |
+*** Stage changes(git add), commit, push
+In magit status buffer:
+| Stage changes/files   | s       |
+| Commit staged changes | c       |
+| Finish commit message | C-c C-c |
+| Push to remote        | P       |
+
+*** Fetch remote branches
+| Fetch from origin | f u |
+After fetching, the magit-status will show "Unpulled from xxx" section
+*** Branches, tags
+| Show all refs                   | y   |
+| Merge                           | m   |
+| Show log of a particular branch | l o |
+| Checkout remote branch          | b c |
+
+*** Diff
+| Diff range | d r | 
+For diffing commits in a branch, enter the log view(by pressing 'l l'), select multiple lines and then run diff range.
+
+To diff between branches, enter ref view(by pressing y), use 'C-SPC' to mark 2 branches then run diff range.
+
+* ERC
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "erc" 
+                                          ;(erc :server "irc.freenode.net" :port 6667 :nick "tsd_usa")
+    (setq erc-autojoin-channels-alist
+                                 '(("freenode.net" "#emacs" "#apache-spark")))
+ (setq erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT"))
+                           )
+#+END_SRC
+
+* Language Modes
+** yaml mode
+#+BEGIN_SRC emacs-lisp
+  (check-install 'yaml-mode)
+#+END_SRC
+
+** scala
+#+BEGIN_SRC emacs-lisp
+  (check-install 'scala-mode)
+#+END_SRC
+** Markdown themes
+#+BEGIN_SRC emacs-lisp
+  (check-install 'markdown-mode (lambda () (setq markdown-css-paths '("http://thomasf.github.io/solarized-css/solarized-light.min.css"))))
+#+END_SRC
+* Autocomplete
+** yasnippet
+#+BEGIN_SRC emacs-lisp
+  (check-install 'yasnippet)
+#+END_SRC
+
+* Interactively list/edit registers
+#+BEGIN_SRC emacs-lisp
+  (check-install 'register-list)
+#+END_SRC
+
+* Latex
+** htmlize
+#+BEGIN_SRC emacs-lisp
+    (check-install 'htmlize (lambda () (require 'htmlize)))
+#+END_SRC
+** Basic latex setup
+#+BEGIN_SRC emacs-lisp
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq TeX-save-query nil)
+  (setq TeX-PDF-mode t)
+#+END_SRC
+** org-mode automatic export to pdf and open after saving
+#+BEGIN_SRC emacs-lisp
+  (defun org-export-pdf-then-open()
+    (org-open-file
+     (org-latex-export-to-pdf))
+    )
+  (defun org-auto-export-on()
+    "auto export to pdf when saving an org file"
+    (interactive)
+    (when (eq major-mode 'org-mode)
+      (add-hook 'after-save-hook
+                'org-export-pdf-then-open t t)
+      )  
+    )
+  (defun org-auto-export-off()
+    "turn off auto export pdf"
+    (interactive)
+    (when (eq major-mode 'org-mode)
+      (remove-hook 'after-save-hook
+                'org-export-pdf-then-open t)
+      )  
+    )
+
+#+END_SRC
+
+* Org
+Truncate lines when start
+#+BEGIN_SRC emacs-lisp
+(setq org-startup-truncated t)
+#+END_SRC
+
+Shortcut to agenda
+#+BEGIN_SRC emacs-lisp
+(define-key org-mode-map (kbd "C-c a") 'org-agenda)
+#+END_SRC
+* Markdown
+#+BEGIN_SRC emacs-lisp
+(setq markdown-header-scaling t)
+#+END_SRC
+* Take Screen Shot
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-screenshot ()
+    "Take a screenshot into a time stamped unique-named file in the
+  same directory as the org-buffer and insert a link to this file."
+    (interactive)
+    (org-display-inline-images)
+    (setq filename
+          (concat
+           (make-temp-name
+            (concat (file-name-nondirectory (buffer-file-name))
+                    "_imgs/"
+                    (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+    (unless (file-exists-p (file-name-directory filename))
+      (make-directory (file-name-directory filename)))
+    ; take screenshot
+    (if (eq system-type 'darwin)
+        (call-process "screencapture" nil nil nil "-i" filename))
+    (if (eq system-type 'gnu/linux)
+        (call-process "import" nil nil nil filename))
+    ; insert into file if correctly taken
+    (if (file-exists-p filename)
+      (insert (concat "[[file:" filename "]]"))))
+#+END_SRC
+* GPG Encryption
+#+BEGIN_SRC emacs-lisp
+  (require 'epa-file)
+  (epa-file-enable)
+  (setq epa-file-select-keys nil)
+  (setq epa-file-cache-passphrase-for-symmetric-encryption t)
+#+END_SRC
+    
+* LLDB hack
+#+BEGIN_SRC emacs-lisp
+  (require 'gud)
+
+
+  ;; History of argument lists passed to lldb.
+  (defvar gud-lldb-history nil)
+
+  ;; Keeps track of breakpoint created.  In the following case, the id is "1".
+  ;; It is used to implement temporary breakpoint.
+  ;; (lldb) b main.c:39
+  ;; breakpoint set --file 'main.c' --line 39
+  ;; Breakpoint created: 1: file ='main.c', line = 39, locations = 1
+  (defvar gud-breakpoint-id nil)
+
+  (defun lldb-extract-breakpoint-id (string)
+    ;; Search for "Breakpoint created: \\([^:\n]*\\):" pattern.
+    ;(message "gud-marker-acc string is: |%s|" string)
+    (if (string-match "Breakpoint created: \\([^:\n]*\\):" string)
+        (progn
+          (setq gud-breakpoint-id (match-string 1 string))
+          (message "breakpoint id: %s" gud-breakpoint-id)))
+  )
+
+  (defun gud-lldb-marker-filter (string)
+    (setq gud-marker-acc
+      (if gud-marker-acc (concat gud-marker-acc string) string))
+    (lldb-extract-breakpoint-id gud-marker-acc)
+    (let (start)
+      ;; Process all complete markers in this chunk
+      (while (or
+              ;; (lldb) r
+              ;; Process 15408 launched: '/Volumes/data/lldb/svn/trunk/test/conditional_break/a.out' (x86_64)
+              ;; (lldb) Process 15408 stopped
+              ;; * thread #1: tid = 0x2e03, 0x0000000100000de8 a.out`c + 7 at main.c:39, stop reason = breakpoint 1.1, queue = com.apple.main-thread
+              (string-match " at \\([^:\n]*\\):\\([0-9]*\\), stop reason = .*\n"
+                            gud-marker-acc start)
+              ;; (lldb) frame select -r 1
+              ;; frame #1: 0x0000000100000e09 a.out`main + 25 at main.c:44
+              (string-match "^frame.* at \\([^:\n]*\\):\\([0-9]*\\)\n"
+                             gud-marker-acc start))
+        ;(message "gud-marker-acc matches our pattern....")
+        (setq gud-last-frame
+              (cons (match-string 1 gud-marker-acc)
+                    (string-to-number (match-string 2 gud-marker-acc)))
+              start (match-end 0)))
+
+      ;; Search for the last incomplete line in this chunk
+      (while (string-match "\n" gud-marker-acc start)
+        (setq start (match-end 0)))
+
+      ;; If we have an incomplete line, store it in gud-marker-acc.
+      (setq gud-marker-acc (substring gud-marker-acc (or start 0))))
+    string)
+
+  ;; Keeps track of whether the Python lldb_oneshot_break function definition has
+  ;; been exec'ed.
+  (defvar lldb-oneshot-break-defined nil)
+
+  ;;;###autoload
+  (defun lldb (command-line)
+    "Run lldb on program FILE in buffer *gud-FILE*.
+  The directory containing FILE becomes the initial working directory
+  and source-file directory for your debugger."
+    (interactive (list (gud-query-cmdline 'lldb)))
+
+    (gud-common-init command-line nil 'gud-lldb-marker-filter)
+    (set (make-local-variable 'gud-minor-mode) 'lldb)
+    (setq lldb-oneshot-break-defined nil)
+
+    ;; Make lldb dump fullpath instead of basename for a file.
+    ;; See also gud-lldb-marker-filter where gud-last-frame is grokked from lldb output.
+    (progn
+      (gud-call "settings set frame-format frame #${frame.index}: ${frame.pc}{ ${module.file.basename}{`${function.name}${function.pc-offset}}}{ at ${line.file.fullpath}:${line.number}}\\n")
+      (sit-for 1)
+      (gud-call "settings set thread-format thread #${thread.index}: tid = ${thread.id}{, ${frame.pc}}{ ${module.file.basename}{`${function.name}${function.pc-offset}}}{ at ${line.file.fullpath}:${line.number}}{, stop reason = ${thread.stop-reason}}\\n")
+      (sit-for 1))
+
+    (gud-def gud-listb  "breakpoint list"
+                        "l"    "List all breakpoints.")
+    (gud-def gud-bt     "thread backtrace"
+                        "b"    "Show stack for the current thread.")
+    (gud-def gud-bt-all "thread backtrace all"
+                        "B"    "Show stacks for all the threads.")
+
+    (gud-def gud-break  "breakpoint set -f %f -l %l"
+                        "\C-b" "Set breakpoint at current line.")
+    (gud-def gud-tbreak
+         (progn (gud-call "breakpoint set -f %f -l %l")
+                    (sit-for 1)
+                    (if (not lldb-oneshot-break-defined)
+                        (progn
+                          ;; The "\\n"'s are required to escape the newline chars
+                          ;; passed to the lldb process.
+                          (gud-call (concat "script exec \"def lldb_oneshot_break(frame, bp_loc):\\n"
+                                                          "    target=frame.GetThread().GetProcess().GetTarget()\\n"
+                                                          "    bp=bp_loc.GetBreakpoint()\\n"
+                                                          "    print 'Deleting oneshot breakpoint:', bp\\n"
+                                                          "    target.BreakpointDelete(bp.GetID())\""))
+                          (sit-for 1)
+                          ;; Set the flag since Python knows about the function def now.
+                          (setq lldb-oneshot-break-defined t)))
+                    (gud-call "breakpoint command add -p %b -o 'lldb_oneshot_break(frame, bp_loc)'"))
+                    "\C-t" "Set temporary breakpoint at current line.")
+    (gud-def gud-remove "breakpoint clear -f %f -l %l"
+                        "\C-d" "Remove breakpoint at current line")
+    (gud-def gud-step   "thread step-in"
+                        "\C-s" "Step one source line with display.")
+    (gud-def gud-stepi  "thread step-inst"
+                        "\C-i" "Step one instruction with display.")
+    (gud-def gud-next   "thread step-over"
+                        "\C-n" "Step one line (skip functions).")
+    (gud-def gud-nexti  "thread step-inst-over"
+                        nil    "Step one instruction (skip functions).")
+    (gud-def gud-cont   "process continue"
+                        "\C-r" "Continue with display.")
+    (gud-def gud-finish "thread step-out"
+                        "\C-f" "Finish executing current function.")
+    (gud-def gud-up
+             (progn (gud-call "frame select -r 1")
+                    (sit-for 1))
+                        "<"    "Up 1 stack frame.")
+    (gud-def gud-down
+             (progn (gud-call "frame select -r -1")
+                    (sit-for 1))
+                        ">"    "Down 1 stack frame.")
+    (gud-def gud-print  "expression -- %e"
+                        "\C-p" "Evaluate C expression at point.")
+    (gud-def gud-pstar  "expression -- *%e"
+                        nil    "Evaluate C dereferenced pointer expression at point.")
+    (gud-def gud-run    "run"
+                        "r"    "Run the program.")
+    (gud-def gud-stop-subjob    "process kill"
+                        "s"    "Stop the program.")
+
+    (setq comint-prompt-regexp  "\\(^\\|\n\\)\\*")
+    (setq paragraph-start comint-prompt-regexp)
+    (run-hooks 'lldb-mode-hook)
+    )
+
+  ;; ;; tooltip
+  ;; (defun gud-lldb-tooltip-print-command (expr)
+  ;;   "Return a suitable command to print the expression EXPR."
+  ;;   (pcase gud-minor-mode
+  ;;     ;; '-o' to print the objc object description if available
+  ;;     (`lldb (concat "expression -o -- " expr))
+  ;;     (`gdbmi (concat "-data-evaluate-expression \"" expr "\""))
+  ;;     (`guiler expr)
+  ;;     (`dbx (concat "print " expr))
+  ;;     ((or `xdb `pdb) (concat "p " expr))
+  ;;     (`sdb (concat expr "/"))))
+
+  ;; (advice-add 'gud-tooltip-print-command :override #'gud-lldb-tooltip-print-command)
+
+  ;; menu
+  (setcdr (nth 2 (nth 7 (assoc 'nexti gud-menu-map))) '((lldb gdbmi gdb dbx)))
+  (setcdr (nth 2 (nth 7 (assoc 'stepi gud-menu-map))) '((lldb gdbmi gdb dbx)))
+  (setcdr (nth 2 (nth 7 (assoc 'finish gud-menu-map))) '((lldb gdbmi gdb guiler xdb jdb pdb)))
+  (setcdr (nth 2 (nth 7 (assoc 'print* gud-menu-map))) '((lldb gdbmi gdb jdb)))
+  (setcdr (nth 2 (nth 7 (assoc 'down gud-menu-map))) '((lldb gdbmi gdb guiler dbx xdb jdb pdb)))
+  (setcdr (nth 2 (nth 7 (assoc 'up gud-menu-map))) '((lldb gdbmi gdb guiler dbx xdb jdb pdb)))
+  (setcdr (nth 2 (nth 7 (assoc 'tbreak gud-menu-map))) '((lldb gdbmi gdb sdb xdb)))
+  (setcdr (nth 2 (nth 7 (assoc 'run gud-menu-map))) '((lldb gdbmi gdb dbx jdb)))
+  ;; (setcdr (nth 2 (nth 7 (assoc 'tooltips gud-menu-map))) '((lldb gdbmi guiler dbx sdb xdb pdb)))
+
+#+END_SRC
+* Help
+** Get help from emacs
+More can be found [[https://www.emacswiki.org/emacs/EmacsNewbieHelpReference][here]]
+| Go to manual page that describes a key binding | C-h K |
+| Go to manual page that describes a command     | C-h F |
+| Search manual for a keyword                    | C-h d |
+| List all commands matching a keyword(aprops)   | C-h a |
+
