@@ -13,12 +13,18 @@ if [ ! -f ~/.emacs ]; then
     touch ~/.emacs
 fi
 
-CONTENT='(org-babel-load-file "~/.emacs.d/emacs_config.org")'
-# -F means fixed string, -x means exactly match whole line. -q means quiet.
-if ! grep -Fxq "$CONTENT" ~/.emacs; then
-    echo "'~/.emacs/' is not loading emacs_config.org, updating... "
-    # using printf here because BSD's echo does not recognize \n.
-    # https://lists.freebsd.org/pipermail/freebsd-questions/2011-December/236645.html
-    printf "$CONTENT\n$(cat ~/.emacs)" > ~/.emacs
-fi
+function insert_to_dot_emacs() {
+    CONTENT=$1
+    # -F means fixed string, -x means exactly match whole line. -q means quiet.
+    if ! grep -Fxq "$CONTENT" ~/.emacs; then
+        echo "updating .emacs with: $CONTENT"
+        # using printf here because BSD's echo does not recognize \n.
+        # https://lists.freebsd.org/pipermail/freebsd-questions/2011-December/236645.html
+        printf "$CONTENT\n$(cat ~/.emacs)" > ~/.emacs
+    fi
+}
+
+# The following lines will add content in reverse order.
+insert_to_dot_emacs '(org-babel-load-file "~/.emacs.d/emacs_config.org")'
+insert_to_dot_emacs '(setq vc-follow-symlinks t)'
 
