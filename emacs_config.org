@@ -2,14 +2,15 @@
 #+OPTIONS: toc:4
 #+PROPERTY: header-args :tangle ~/.emacs.d/init.el :comments org
 #+STARTUP: overview
+
 * Initial Config
 This emacs config file is written using "Literate Programming", in the .emacs
 file, =(org-babel-load-file "~/.emacs.d/init.org")= will load the e-lisp code in
 this file.
 
-Manually maintained lisp files are in the ~/.emacs.d/lisp folder.
+Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/lisp/")
+  (add-to-list 'load-path "~/.emacs.d/elisp/")
 #+END_SRC
 
 * Repository of Packages

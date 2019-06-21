@@ -28,3 +28,6 @@ function insert_to_dot_emacs() {
 insert_to_dot_emacs '(org-babel-load-file "~/.emacs.d/emacs_config.org")'
 insert_to_dot_emacs '(setq vc-follow-symlinks t)'
 
+# 3. ln elisp folder to ~/.emacs.d/elisp
+ln -Fs $(pwd)/elisp ~/.emacs.d/elisp
+
