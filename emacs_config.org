@@ -323,31 +323,53 @@ Tabs makes things hard when you have different tab-width.
                               ))
 #+END_SRC
 
+* Ivy
+Ivy User Manual: https://oremacs.com/swiper/.  
+
+Can trigger different actions on a selected item by pressing M-o on
+the highlighted item.
+
+C-j to select current directory candidate and a start a new session.
+#+BEGIN_SRC emacs-lisp
+    ;; counsel will bring ivy and swiper as dependency.
+    (check-install 'counsel (lambda()
+                              (counsel-mode 1)
+                              (setq ivy-use-virtual-buffers t
+                                    ivy-count-format "%d/%d ")
+                              (global-set-key (kbd "C-x C-r") 'counsel-recentf)
+                              (global-set-key (kbd "C-x b") 'counsel-ibuffer)
+                              (global-set-key (kbd "M-s") 'swiper)
+                              (global-set-key (kbd "C-c C-r") 'ivy-resume)
+    ))
+
+#+END_SRC
 * Helm
 #+BEGIN_SRC emacs-lisp
-  (check-install 'helm (lambda()
-                  ;;(require 'helm-config)
-                  ;; try to use helm's autoload to reduce startup time
-                  (helm-mode 1) ;; This function is costly, but damn... helm is too good
-                  (global-set-key (kbd "C-x C-f")  'helm-find-files)
-                  (global-set-key (kbd "M-s") 'helm-swoop)
-                  (global-set-key (kbd "M-x") 'helm-M-x)
-
-                  (defun auto-helm-projectile ()
-                    "enbale projectile on demand"
-                    (interactive)
-                    (projectile-mode t)
-                    (helm-projectile)
-                    )
-                  (global-set-key (kbd "C-c h p") 'auto-helm-projectile)
-                  (setq projectile-enable-caching t)
-
-                  (setq helm-command-prefix-key nil)
-                  (setq helm-split-window-in-side-p t)
-                  (setq helm-swoop-split-with-multiple-windows t)
-                  (global-set-key (kbd "C-x C-r") 'helm-recentf)
-                  ))
-  (check-install 'helm-projectile)
+;;  (check-install 'helm (lambda()
+;;                  ;;(require 'helm-config)
+;;                  ;; try to use helm's autoload to reduce startup time
+;;                  (helm-mode 1) ;; This function is costly, but damn... helm is too good
+;;                  (global-set-key (kbd "C-x C-f")  'helm-find-files)
+;;                  (global-set-key (kbd "M-s") 'helm-swoop)
+;;                  (global-set-key (kbd "M-x") 'helm-M-x)
+;;
+;;                  (defun auto-helm-projectile ()
+;;                    "enbale projectile on demand"
+;;                    (interactive)
+;;                    (projectile-mode t)
+;;                    (helm-projectile)
+;;                    )
+;;                  (global-set-key (kbd "C-c h p") 'auto-helm-projectile)
+;;                  (setq projectile-enable-caching t)
+;;
+;;                  (setq helm-command-prefix-key nil)
+;;                  (setq helm-split-window-in-side-p t)
+;;                  (setq helm-swoop-split-with-multiple-windows t)
+;;                  (global-set-key (kbd "C-x C-r") 'helm-recentf)
+;;                  (global-set-key (kbd "s-f") 'helm-find-files)
+;;
+;;                  ))
+;;  (check-install 'helm-projectile)
 #+END_SRC
 
 * Dired
@@ -735,7 +757,6 @@ Super useful function:
   (global-set-key (kbd "s-<left>") 'winner-undo)
   (global-set-key (kbd "s-<right>") 'winner-redo)
 
-  (global-set-key (kbd "s-f") 'helm-find-files)
 
   (global-set-key (kbd "M-1") (lambda() (interactive) (window-configuration-to-register ?1)))
   (global-set-key (kbd "M-2") (lambda() (interactive) (window-configuration-to-register ?2)))
