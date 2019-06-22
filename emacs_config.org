@@ -685,10 +685,11 @@ Then run-rc function defined below will run the Make command for you
 |                                |                                  |
 
 #+BEGIN_SRC emacs-lisp
+  (if use-rtags
   (check-install 'rtags (lambda ()
                   (with-eval-after-load 'rtags
                   (rtags-enable-standard-keybindings))
-  ))
+  )))
 #+END_SRC
 
 * Window Management
