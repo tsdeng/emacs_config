@@ -1,6 +1,6 @@
 #+TITLE: Tianshuo's emacs setup
 #+OPTIONS: toc:4
-#+PROPERTY: header-args :tangle ~/.emacs.d/init.el :comments org
+#+PROPERTY: header-args :tangle ~/.emacs.d/emacs_config.el :comments org
 #+STARTUP: overview
 
 * Initial Config
@@ -342,34 +342,6 @@ C-j to select current directory candidate and a start a new session.
                               (global-set-key (kbd "C-c C-r") 'ivy-resume)
     ))
 
-#+END_SRC
-* Helm
-#+BEGIN_SRC emacs-lisp
-;;  (check-install 'helm (lambda()
-;;                  ;;(require 'helm-config)
-;;                  ;; try to use helm's autoload to reduce startup time
-;;                  (helm-mode 1) ;; This function is costly, but damn... helm is too good
-;;                  (global-set-key (kbd "C-x C-f")  'helm-find-files)
-;;                  (global-set-key (kbd "M-s") 'helm-swoop)
-;;                  (global-set-key (kbd "M-x") 'helm-M-x)
-;;
-;;                  (defun auto-helm-projectile ()
-;;                    "enbale projectile on demand"
-;;                    (interactive)
-;;                    (projectile-mode t)
-;;                    (helm-projectile)
-;;                    )
-;;                  (global-set-key (kbd "C-c h p") 'auto-helm-projectile)
-;;                  (setq projectile-enable-caching t)
-;;
-;;                  (setq helm-command-prefix-key nil)
-;;                  (setq helm-split-window-in-side-p t)
-;;                  (setq helm-swoop-split-with-multiple-windows t)
-;;                  (global-set-key (kbd "C-x C-r") 'helm-recentf)
-;;                  (global-set-key (kbd "s-f") 'helm-find-files)
-;;
-;;                  ))
-;;  (check-install 'helm-projectile)
 #+END_SRC
 
 * Dired

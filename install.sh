@@ -4,7 +4,7 @@ if [ ! -d ~/.emacs.d ]; then
     mkdir ~/.emacs.d
 fi
 
-ln -Fs $(pwd)/emacs_config.org ~/.emacs.d/emacs_config.org
+ln -Fns $(pwd)/emacs_config.org ~/.emacs.d/emacs_config.org
 
 # 2. modify .emacs to read emacs_config.org
 
@@ -28,6 +28,8 @@ function insert_to_dot_emacs() {
 insert_to_dot_emacs '(org-babel-load-file "~/.emacs.d/emacs_config.org")'
 insert_to_dot_emacs '(setq vc-follow-symlinks t)'
 
-# 3. ln elisp folder to ~/.emacs.d/elisp
-ln -Fs $(pwd)/elisp ~/.emacs.d/elisp
+# 3. ln elisp folder to ~/.emacs.d/elisp, the -n makes sure if the
+# symlink already exists, it does not follow it and create a nested
+# link.
+ln -Fns $(pwd)/elisp ~/.emacs.d/elisp
 
