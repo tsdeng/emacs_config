@@ -74,25 +74,28 @@ Macros and functions to support install a plugin
         );;if
     )
 #+END_SRC
+
 #+BEGIN_SRC emacs-lisp
 ;; test
 ;;(check-install (list 'scala-mode 'scala-mode3) (lambda() (message "go!!!")))
 ;;(check-install 'scala-mode3 (lambda() (message "go!!!")))
 
 #+END_SRC
+
 ** pkg-info
 #+BEGIN_SRC emacs-lisp
   (check-install 'pkg-info)
 #+END_SRC
 
 * Literate Programming
-Making sure fonts in the code block is proper highlighted; Disable confirmation when executing a code block when =C-c C-c=
+Making sure fonts in the code block is proper highlighted; Disable
+confirmation when executing a code block when =C-c C-c=
+
 #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'org
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t))
-
 #+END_SRC
 
 Add languages supports
@@ -107,20 +110,22 @@ Add languages supports
 #+END_SRC
 
 * Basic Emacs Configuration
+
 ** Disable Startup message
 #+BEGIN_SRC emacs-lisp
   ;;(setq inhibit-startup-message t)
 #+END_SRC
 
-Following settings are for all emacs built in functions, not from external plugins/modules
 ** Terminal Mouse
 #+BEGIN_SRC emacs-lisp
 (xterm-mouse-mode 1)
 #+END_SRC
+
 ** Splash screen show bookmarks
 #+BEGIN_SRC emacs-lisp
 ;;(setq initial-buffer-choice (lambda () (list-bookmarks) (get-buffer "*Bookmark List*")))
 #+END_SRC
+
 ** Temp File settings
 #+BEGIN_SRC emacs-lisp
   (setq backup-directory-alist
@@ -146,75 +151,57 @@ Following settings are for all emacs built in functions, not from external plugi
 #+END_SRC
 
 ** Clipboard, copy/paste
+
+TODO: following code needs revisit
 #+BEGIN_SRC emacs-lisp
-  ;; Following code are deprecated, since osc52 seems to be a more portable and
-  ;; universal solution. osc52 use escape code to send content to paste
-  ;; board. Following terminals support osc52:
-  ;; Linux -> Chrome's Secure Shell
-  ;; OSX -> iTerm or Chrome's Secure Shell
+    (defun clip-use-osx ()
+      "Copy to osx's clipboard directly, this is useful for osx's terminal \
+    which does not support osc52"
+      (interactive)
+      (check-install 'osx-clipboard (lambda()
+                                      (osx-clipboard-mode +1))))
 
-  ;; Only in very special cases where you want to copy to the system clipboard
-  ;; directly, call following function
-  ;; (xclip-mode 1)
-  ;; (osc-clipboard-mode +1)
-
-  ;;  (if (string-equal system-type "darwin")
-  ;;      (check-install 'osx-clipboard (lambda()
-  ;;                                      (osx-clipboard-mode +1))))
-  ;;
-  ;;  (if (string-equal system-type "gnu/linux")
-  ;;      (check-install 'xclip' (lambda()
-  ;;                               (require 'xclip)
-  ;;                               (turn-on-xclip)
-  ;;                               )))
-
-  ;;; Code:
-  (defun clip-use-osx ()
-    "Copy to osx's clipboard directly, this is useful for osx's terminal \
-  which does not support osc52"
-    (interactive)
-    (check-install 'osx-clipboard (lambda()
-                                    (osx-clipboard-mode +1))))
-;;  (defun clip-use-xclip ()
-;;    "Copy to linux's paste board directly with xclip, need to make sure xclip \
-;;  is installed on the system.  This is useful only when using gnome-terminal \
-;;  which does not support osc52"
-;;    (interactive)
-;;    (check-install 'xclip (lambda()
-;;                            (require 'xclip)
-;;                            (xclip--setup))))
+    (defun clip-use-xclip ()
+      "Copy to linux's paste board directly with xclip, need to make sure xclip \
+    is installed on the system.  This is useful only when using gnome-terminal \
+    which does not support osc52"
+      (interactive)
+      (check-install 'xclip (lambda()
+                              (require 'xclip)
+                              (xclip--setup))))
   (defun in-ssh ()
     (interactive)
     "if I'm in ssh"
     (not (null (getenv "SSH_TTY")))
-    )
+      )
 
-  (defun clip-use-osc52 ()
-    "Use osc52 to paste, should support remote terminal, even within tmux.  In \
-  unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
-  escape characters being displayed on the screen"
-    (interactive)
-    (require 'osc52e)
-    (osc52-set-cut-function))
+    (defun clip-use-osc52 ()
+      "Use osc52 to paste, should support remote terminal, even within tmux.  In \
+    unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
+    escape characters being displayed on the screen"
+      (interactive)
+      (require 'osc52e)
+      (osc52-set-cut-function))
 
 
-  ;; default to using osc52
-;;  (clip-use-osc52)
-;;  (if (in-ssh)
-;;      (progn
-;;        (message "in ssh, using osc52")
-;;        (clip-use-osc52)
-;;        )
-;;    (progn
-;;      (message "not in ssh, use xclip")
-;;      (clip-use-xclip)
-;;      )
-;;    )
+    ;; default to using osc52
+  ;;  (clip-use-osc52)
+  ;;  (if (in-ssh)
+  ;;      (progn
+  ;;        (message "in ssh, using osc52")
+  ;;        (clip-use-osc52)
+  ;;        )
+  ;;    (progn
+  ;;      (message "not in ssh, use xclip")
+  ;;      (clip-use-xclip)
+  ;;      )
+  ;;    )
 
 
 #+END_SRC
+
 ** Click link behavior
-You don't always want to open the link when click on it, especially when in a
+You don't always want to open the link when clicking on it, especially when in a
 remote emacs session, since it will open the browser in remote host.
 #+BEGIN_SRC emacs-lisp
   ;; browse to cut. By default, if you click a link in org mode in emacs, it will
@@ -222,7 +209,7 @@ remote emacs session, since it will open the browser in remote host.
   ;; ssh/tmux into a server, clicking the org link will open a new window on the
   ;; server but not the client machine, so on the client you will see nothing
   ;; happened. When calling browse-to-cut, it will set the
-  ;; browse-url-broser-function to cut the link into pasteboard, instead of
+  ;; browse-url-browser-function to cut the link into pasteboard, instead of
   ;; opening the browser. This is useful since you can just paste the url into a
   ;; browser on the client side.
 
@@ -266,11 +253,6 @@ Just call =centered-cursor-mode=, it's an autoload function.
   (setq search-whitespace-regexp ".*?") ;; support search multiple words
 #+END_SRC
 
-** Always follow symlink
-#+BEGIN_SRC emacs-lisp
-  (setq vc-follow-symlinks t) ;; always follow symlink
-#+END_SRC
-
 ** Recent files buffer
 #+BEGIN_SRC emacs-lisp
   (require 'recentf)
@@ -288,7 +270,7 @@ Just call =centered-cursor-mode=, it's an autoload function.
 #+END_SRC
 
 ** No tabs
-tabs makes things hard when different ppl have different tab-width
+Tabs makes things hard when you have different tab-width.
 #+BEGIN_SRC emacs-lisp
   (setq-default indent-tabs-mode nil)
 #+END_SRC
@@ -327,42 +309,6 @@ tabs makes things hard when different ppl have different tab-width
 (save-place-mode 1) 
 #+END_SRC
 
-** Repeat command
-Press C-s ooo... to jump between windows
-#+BEGIN_SRC emacs-lisp
-  (check-install 'repeat
-                 (lambda()
-                   (require 'repeat)
-                   (defun make-repeatable-command (cmd)
-                     "Returns a new command that is a repeatable version of CMD.
-      The new command is named CMD-repeat.  CMD should be a quoted
-      command.
-
-      This allows you to bind the command to a compound keystroke and
-      repeat it with just the final key.  For example:
-
-        (global-set-key (kbd \"C-c a\") (make-repeatable-command 'foo))
-
-      will create a new command called foo-repeat.  Typing C-c a will
-      just invoke foo.  Typing C-c a a a will invoke foo three times,
-      and so on.
-
-      See related discussion here: 
-      http://batsov.com/articles/2012/03/08/emacs-tip-number-4-repeat-last-command/#comment-459843643
-      https://groups.google.com/forum/?hl=en&fromgroups=#!topic/gnu.emacs.help/RHKP2gjx7I8"
-                     (fset (intern (concat (symbol-name cmd) "-repeat"))
-                           `(lambda ,(help-function-arglist cmd) ;; arg list
-                              ,(format "A repeatable version of `%s'." (symbol-name cmd)) ;; doc string
-                              ,(interactive-form cmd) ;; interactive form
-                              ;; see also repeat-message-function
-                              (setq last-repeatable-command ',cmd)
-                              (repeat nil)))
-                     (intern (concat (symbol-name cmd) "-repeat")))
-
-                   (global-set-key (kbd "C-x o") (make-repeatable-command 'other-window))
-                   (global-set-key (kbd "C-c <left>") (make-repeatable-command 'winner-undo))
-                   ))
-#+END_SRC
 
 ** =C-]= expand-region
 #+BEGIN_SRC emacs-lisp
@@ -373,18 +319,16 @@ Press C-s ooo... to jump between windows
 #+BEGIN_SRC emacs-lisp
   (check-install 'writeroom-mode (lambda()
                               (global-set-key (kbd "C-x RET") 'writeroom-mode)
+                              (setq writeroom-restore-window-config t)
                               ))
 #+END_SRC
-* Themes
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
 
-#+END_SRC
 * Dashboard
 #+BEGIN_SRC emacs-lisp
-;;(require 'dashboard)
-;;(dashboard-setup-startup-hook)
+(require 'dashboard)
+(dashboard-setup-startup-hook)
 #+END_SRC
+
 * Helm
 #+BEGIN_SRC emacs-lisp
   (check-install 'helm (lambda()
