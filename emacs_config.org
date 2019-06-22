@@ -323,12 +323,6 @@ Tabs makes things hard when you have different tab-width.
                               ))
 #+END_SRC
 
-* Dashboard
-#+BEGIN_SRC emacs-lisp
-(require 'dashboard)
-(dashboard-setup-startup-hook)
-#+END_SRC
-
 * Helm
 #+BEGIN_SRC emacs-lisp
   (check-install 'helm (lambda()
@@ -363,6 +357,7 @@ Add useful command shortcuts
 (define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
 (define-key dired-mode-map "k" 'dired-kill-subdir)
 #+END_SRC
+
 * Search & Jump
 ** Repeatly pop marks
 C-u C-SPC C-SPC... to keep poping marks
