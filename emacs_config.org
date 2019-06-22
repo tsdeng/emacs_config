@@ -168,7 +168,7 @@ TODO: following code needs revisit
       (interactive)
       (check-install 'xclip (lambda()
                               (require 'xclip)
-                              (xclip--setup))))
+                              (xclip-mode))))
   (defun in-ssh ()
     (interactive)
     "if I'm in ssh"
