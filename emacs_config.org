@@ -310,6 +310,12 @@ Tabs makes things hard when you have different tab-width.
 #+END_SRC
 
 
+** Avoid screen flickering when recenter or jump to definition
+Borrowed from: https://emacs.stackexchange.com/questions/47091/stop-emacs-from-redrawing-display
+#+BEGIN_SRC emacs-lisp
+(setq recenter-redisplay nil)
+#+END_SRC
+
 ** =C-]= expand-region
 #+BEGIN_SRC emacs-lisp
   (check-install 'expand-region (lambda () (global-set-key (kbd "C-]") 'er/expand-region)))
@@ -685,10 +691,11 @@ Then run-rc function defined below will run the Make command for you
 |                                |                                  |
 
 #+BEGIN_SRC emacs-lisp
+  (if use-rtags
   (check-install 'rtags (lambda ()
                   (with-eval-after-load 'rtags
                   (rtags-enable-standard-keybindings))
-  ))
+  )))
 #+END_SRC
 
 * Window Management
