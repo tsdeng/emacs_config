@@ -269,6 +269,11 @@ Just call =centered-cursor-mode=, it's an autoload function.
                       )) ;; hide toolbar in gui mode
 #+END_SRC
 
+
+** Hide menu bar
+#+BEGIN_SRC emacs-lisp
+(menu-bar-mode 0)
+#+END_SRC
 ** No tabs
 Tabs makes things hard when you have different tab-width.
 #+BEGIN_SRC emacs-lisp
