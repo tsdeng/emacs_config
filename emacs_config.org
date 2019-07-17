@@ -345,6 +345,8 @@ C-j to select current directory candidate and a start a new session.
     ;; counsel will bring ivy and swiper as dependency.
     (check-install 'counsel (lambda()
                               (counsel-mode 1)
+                              (setq counsel-find-file-at-point t)
+                              (setq counsel-preselect-current-file t)
                               (setq ivy-use-virtual-buffers t
                                     ivy-count-format "%d/%d ")
                               (global-set-key (kbd "C-x C-r") 'counsel-recentf)
