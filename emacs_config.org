@@ -299,7 +299,7 @@ Tabs makes things hard when you have different tab-width.
 ** Highlight current line
 #+BEGIN_SRC emacs-lisp
   ;; (set-face-foreground 'highlight nil)
-  ;; (global-hl-line-mode 1)
+  (global-hl-line-mode 1)
   ;; (global-visual-line-mode 1)
 #+END_SRC
 
@@ -350,7 +350,7 @@ C-j to select current directory candidate and a start a new session.
                               (setq ivy-use-virtual-buffers t
                                     ivy-count-format "%d/%d ")
                               (global-set-key (kbd "C-x C-r") 'counsel-recentf)
-                              (global-set-key (kbd "C-x b") 'counsel-ibuffer)
+                              (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
                               (global-set-key (kbd "M-s") 'swiper)
                               (global-set-key (kbd "C-c C-r") 'ivy-resume)
     ))
@@ -729,6 +729,7 @@ Super useful function:
 #+BEGIN_SRC emacs-lisp
   (check-install 'ace-window (lambda ()
                   (global-set-key (kbd "C-x o") 'ace-window)
+                  (global-set-key (kbd "C-c w s") 'ace-swap-window)
   ))
 #+END_SRC
 
@@ -767,6 +768,19 @@ Super useful function:
                                lambda ()
                                       (global-set-key (kbd "C-c z") 'zoom-window-zoom)
                                       ))
+#+END_SRC
+
+** Transpose frame
+#+BEGIN_SRC emacs-lisp
+;; Commenting out following line because the package is not availalbe in MELPA-stable
+;;(check-install 'transpose-frame)
+#+END_SRC
+** Dedicated mode to lock a window
+#+BEGIN_SRC emacs-lisp
+  (check-install 'dedicated (
+                           lambda ()
+                                (require 'dedicated)
+  ))
 #+END_SRC
 * Terminal
 *** Press F2 to create a term buffer or rename an existing buffer
