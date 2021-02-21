@@ -14,7 +14,9 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 #+END_SRC
 
 * Repository of Packages
+
 ** Melpa
+
 #+BEGIN_SRC emacs-lisp
   ;; enable packages
   (require 'package) ;; You might already have this line
@@ -29,6 +31,7 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 #+END_SRC
 
 ** Auto install packages
+
 Macros and functions to support install a plugin
 #+BEGIN_SRC emacs-lisp
     (defun check-package-install (package-name)
@@ -468,7 +471,7 @@ http://tuhdo.github.io/c-ide.html#sec-2
 #+END_SRC
 ** =M-s= helm-swoop
 #+BEGIN_SRC emacs-lisp
-    (check-install 'helm-swoop)
+;;    (check-install 'helm-swoop)
 #+END_SRC
 ** ag - the silver searcher
 #+BEGIN_SRC emacs-lisp
@@ -780,6 +783,8 @@ Super useful function:
   (check-install 'dedicated (
                            lambda ()
                                 (require 'dedicated)
+                              ;; p as in pin.
+                              (global-set-key (kbd "C-c p") 'dedicated-mode)
   ))
 #+END_SRC
 * Terminal
@@ -972,6 +977,23 @@ Shortcut to agenda
 * Markdown
 #+BEGIN_SRC emacs-lisp
 (setq markdown-header-scaling t)
+#+END_SRC
+
+
+Enable Pandoc mode for md files.
+#+BEGIN_SRC emacs-lisp
+      (check-install 'pandoc-mode (lambda () 
+  (add-hook 'markdown-mode-hook 'pandoc-mode)
+  (defun pandoc-export-pdf-on-save()
+    (interactive)
+    (add-hook 'after-save-hook 'pandoc-convert-to-pdf nil t)
+  )
+  ))
+#+END_SRC
+
+Autofill for markdown
+#+BEGIN_SRC emacs-lisp
+(add-hook 'markdown-mode-hook 'auto-fill-mode)
 #+END_SRC
 * Take Screen Shot
 #+BEGIN_SRC emacs-lisp
