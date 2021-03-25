@@ -20,8 +20,10 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
   (require 'package) ;; You might already have this line
 ;;    (add-to-list 'package-archives
 ;;                 '("melpa" . "https://melpa.org/packages/"))
+
   (add-to-list 'package-archives
                '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
     ;; (when (< emacs-major-version 24)
     ;;   ;; For important compatibility libraries like cl-lib
   ;;    (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))) 
@@ -250,7 +252,7 @@ Just call =centered-cursor-mode=, it's an autoload function.
 
 ** Support search multiple words
 #+BEGIN_SRC emacs-lisp
-  (setq search-whitespace-regexp ".*?") ;; support search multiple words
+;;  (setq search-whitespace-regexp ".*?") ;; support search multiple words
 #+END_SRC
 
 ** Recent files buffer
