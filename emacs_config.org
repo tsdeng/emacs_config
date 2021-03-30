@@ -14,7 +14,9 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 #+END_SRC
 
 * Repository of Packages
+
 ** Melpa
+
 #+BEGIN_SRC emacs-lisp
   ;; enable packages
   (require 'package) ;; You might already have this line
@@ -31,6 +33,7 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 #+END_SRC
 
 ** Auto install packages
+
 Macros and functions to support install a plugin
 #+BEGIN_SRC emacs-lisp
     (defun check-package-install (package-name)
@@ -156,37 +159,38 @@ Add languages supports
 
 TODO: following code needs revisit
 #+BEGIN_SRC emacs-lisp
-    (defun clip-use-osx ()
-      "Copy to osx's clipboard directly, this is useful for osx's terminal \
-    which does not support osc52"
-      (interactive)
-      (check-install 'osx-clipboard (lambda()
-                                      (osx-clipboard-mode +1))))
+  (defun clip-use-osx ()
+    "Copy to osx's clipboard directly, this is useful for osx's terminal \
+      which does not support osc52"
+    (interactive)
+    (check-install 'osx-clipboard (lambda()
+                                    (osx-clipboard-mode +1))))
 
-    (defun clip-use-xclip ()
-      "Copy to linux's paste board directly with xclip, need to make sure xclip \
-    is installed on the system.  This is useful only when using gnome-terminal \
-    which does not support osc52"
-      (interactive)
-      (check-install 'xclip (lambda()
-                              (require 'xclip)
-                              (xclip-mode))))
+  (defun clip-use-xclip ()
+    "Copy to linux's paste board directly with xclip, need to make sure xclip \
+      is installed on the system.  This is useful only when using gnome-terminal \
+      which does not support osc52"
+    (interactive)
+    (check-install 'xclip (lambda()
+                            (require 'xclip)
+                            (xclip-mode))))
   (defun in-ssh ()
     (interactive)
     "if I'm in ssh"
     (not (null (getenv "SSH_TTY")))
-      )
+    )
 
-    (defun clip-use-osc52 ()
-      "Use osc52 to paste, should support remote terminal, even within tmux.  In \
-    unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
-    escape characters being displayed on the screen"
-      (interactive)
-      (require 'osc52e)
-      (osc52-set-cut-function))
+  (defun clip-use-osc52 ()
+    "Use osc52 to paste, should support remote terminal, even within tmux.  In \
+      unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
+      escape characters being displayed on the screen"
+    (interactive)
+    (require 'osc52e)
+    (osc52-set-cut-function))
 
 
-    ;; default to using osc52
+  (clip-use-osc52)
+  ;; default to using osc52
   ;;  (clip-use-osc52)
   ;;  (if (in-ssh)
   ;;      (progn
@@ -299,12 +303,22 @@ Tabs makes things hard when you have different tab-width.
 #+END_SRC
 
 ** Highlight current line
-#+BEGIN_SRC emacs-lisp
-  ;; (set-face-foreground 'highlight nil)
-  (global-hl-line-mode 1)
-  ;; (global-visual-line-mode 1)
+Actually highlight current line is a bad idea. It's hard to find a color that
+works with both white and dark background.
+   #+BEGIN_SRC emacs-lisp
+;;  (set-face-foreground 'highlight nil)
+;;  (global-hl-line-mode 1)
+;;  (custom-set-faces
+;;   '(hl-line ((t (:inherit nil :extend t :background "color-233")))))
+    ;;(global-visual-line-mode 1)
 #+END_SRC
 
+** Theme
+#+BEGIN_SRC emacs-lisp
+  (custom-set-variables
+   '(custom-enabled-themes '(wombat))
+   )
+#+END_SRC
 ** Automatic indent and insert parenthesis
 #+BEGIN_SRC emacs-lisp
   (electric-indent-mode +1)
@@ -336,6 +350,12 @@ Borrowed from: https://emacs.stackexchange.com/questions/47091/stop-emacs-from-r
                               ))
 #+END_SRC
 
+** Add some marging to buffer for better looking
+#+BEGIN_SRC emacs-lisp
+  ;;Disabling this because there is a bug will cause not being
+  ;; able to resize windows when margin is set. https://github.com/emacsorphanage/git-gutter/issues/162
+  ;;(setq-default left-margin-width 2 right-margin-width 2)
+#+END_SRC
 * Ivy
 Ivy User Manual: https://oremacs.com/swiper/.  
 
@@ -375,7 +395,7 @@ C-u C-SPC C-SPC... to keep poping marks
 #+END_SRC
 ** imenu for inbuffer navigation
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "<f12>") 'imenu)
+  (global-set-key (kbd "<f12>") 'imenu-list)
 #+END_SRC
 ** ace-jump-mode
 #+BEGIN_SRC emacs-lisp
@@ -470,7 +490,7 @@ http://tuhdo.github.io/c-ide.html#sec-2
 #+END_SRC
 ** =M-s= helm-swoop
 #+BEGIN_SRC emacs-lisp
-    (check-install 'helm-swoop)
+;;    (check-install 'helm-swoop)
 #+END_SRC
 ** ag - the silver searcher
 #+BEGIN_SRC emacs-lisp
@@ -782,6 +802,8 @@ Super useful function:
   (check-install 'dedicated (
                            lambda ()
                                 (require 'dedicated)
+                              ;; p as in pin.
+                              (global-set-key (kbd "C-c p") 'dedicated-mode)
   ))
 #+END_SRC
 * Terminal
@@ -974,6 +996,38 @@ Shortcut to agenda
 * Markdown
 #+BEGIN_SRC emacs-lisp
 (setq markdown-header-scaling t)
+#+END_SRC
+
+
+Enable Pandoc mode for md files.
+#+BEGIN_SRC emacs-lisp
+      (check-install 'pandoc-mode (lambda () 
+  (add-hook 'markdown-mode-hook 'pandoc-mode)
+  (defun pandoc-export-pdf-on-save()
+    (interactive)
+    (add-hook 'after-save-hook 'pandoc-convert-to-pdf nil t)
+  )
+  ))
+#+END_SRC
+
+Autofill for markdown.
+Update: do not use auto-fill. It could line wrap a link.
+#+BEGIN_SRC emacs-lisp
+;;(add-hook 'markdown-mode-hook 'auto-fill-mode)
+#+END_SRC
+
+Display fill column indicator
+#+BEGIN_SRC emacs-lisp
+(add-hook 'markdown-mode-hook 'display-fill-column-indicator-mode)
+#+END_SRC
+
+Enable imenu-list package. It shows a side pane with the outline of
+the documents.
+#+BEGIN_SRC emacs-lisp
+  (check-install 'imenu-list)
+  (custom-set-variables
+  '(imenu-list-position 'left)
+  )
 #+END_SRC
 * Take Screen Shot
 #+BEGIN_SRC emacs-lisp
