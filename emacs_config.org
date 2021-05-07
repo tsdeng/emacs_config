@@ -356,6 +356,14 @@ Borrowed from: https://emacs.stackexchange.com/questions/47091/stop-emacs-from-r
   ;; able to resize windows when margin is set. https://github.com/emacsorphanage/git-gutter/issues/162
   ;;(setq-default left-margin-width 2 right-margin-width 2)
 #+END_SRC
+** Capslock binding
+Since I usually rebind Caps lock key to control, I need another binding for the Caps lock function.
+#+BEGIN_SRC emacs-lisp
+  (check-install 'caps-lock (lambda()
+                                   (global-set-key (kbd "C-x c") 'caps-lock-mode)
+                                   ))
+
+#+END_SRC
 * Ivy
 Ivy User Manual: https://oremacs.com/swiper/.  
 
