@@ -181,9 +181,7 @@ Use either osc52, xclip or osx-clipboard.
 
   ;; OSX
   (if (string-equal system-type "darwin")
-      (if (display-graphic-p)
-          (clip-use-osx)
-        (clip-use-osc52)))
+          (clip-use-osx))
   ;; Linux
   (if (string-equal system-type "gnu/linux")
       (if (in-ssh)
