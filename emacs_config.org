@@ -36,47 +36,40 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 
 Macros and functions to support install a plugin
 #+BEGIN_SRC emacs-lisp
-    (defun check-package-install (package-name)
-      (if (package-installed-p package-name)
-          (progn
-            (message "%s is installed :)" package-name)
-            t
-            )
-        (progn
-          (if (y-or-n-p (format "install %s" package-name))
-              (progn
-                (message "installing %s ..." package-name)
-                (unless package-archive-contents
-                  (package-refresh-contents))
-                (package-install package-name)
-                t
-                )
-            (progn
-              (message "skipping install %s" package-name)
-              nil
-              )
-            )
-          )
-        )
+  (defun check-package-install (package-name)
+    (if (package-installed-p package-name)
+	(progn
+	  (message "%s is installed :)" package-name)
+	  t
+	  )
+      (progn
+	(message "installing %s ..." package-name)
+	(unless package-archive-contents
+	  (package-refresh-contents))
+	(package-install package-name)
+	t
+	)
+
       )
+    )
 
   (defun check-install (package-name &optional func)
     (interactive)
     (if 
-        (cond ((listp package-name)
-               (progn
-                 (cl-reduce (lambda (x y) (and x y)) (cl-map 'list 'check-package-install package-name) :initial-value t)
-                 )
-               )
-              ((symbolp package-name)
-               (check-package-install package-name)
-               )
-              )
+	(cond ((listp package-name)
+	       (progn
+		 (cl-reduce (lambda (x y) (and x y)) (cl-map 'list 'check-package-install package-name) :initial-value t)
+		 )
+	       )
+	      ((symbolp package-name)
+	       (check-package-install package-name)
+	       )
+	      )
 
-        (if func
-            (funcall func)) ;; if all installed
+	(if func
+	    (funcall func)) ;; if all installed
       (message "Not installed %s, ignoring func" package-name)
-        );;if
+      );;if
     )
 #+END_SRC
 
