@@ -18,19 +18,23 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 ** Melpa
 
 #+BEGIN_SRC emacs-lisp
-  ;; enable packages
-  (require 'package) ;; You might already have this line
-;;    (add-to-list 'package-archives
-;;                 '("melpa" . "https://melpa.org/packages/"))
+    ;; enable packages
+    (require 'package) ;; You might already have this line
 
-  (add-to-list 'package-archives
-               '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+  ;; https://emacs.stackexchange.com/questions/2969/is-it-possible-to-use-both-melpa-and-melpa-stable-at-the-same-time
+(setq package-archives
+      '(("GNU ELPA"     . "https://elpa.gnu.org/packages/")
+        ("MELPA Stable" . "https://stable.melpa.org/packages/")
+        ("MELPA"        . "https://melpa.org/packages/"))
+      package-archive-priorities
+      '(("MELPA Stable" . 10)
+        ("GNU ELPA"     . 5)
+        ("MELPA"        . 0)))
 
-    ;; (when (< emacs-major-version 24)
-    ;;   ;; For important compatibility libraries like cl-lib
-  ;;    (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))) 
-  (package-initialize) ;; You might already have this line
+    (package-initialize) ;; You might already have this line
 #+END_SRC
+
+#+RESULTS:
 
 ** Auto install packages
 
@@ -593,107 +597,28 @@ Some key concepts of style checking for python
 To beautify your python file, 
 
 * C and CPP IDE
-** Rtags
-*** Auto completion and diagnostics(highlighting errors)
-https://github.com/Andersbakken/rtags
-Following configurations are from the "Code completion in Emacs" section.
 #+BEGIN_SRC emacs-lisp
-    ;; rtag company for auto completion
-    (defun rtags-auto-complete-setup ()
-          (require 'rtags)
-          (require 'company)
-          (rtags-start-process-unless-running)
-          (setq rtags-autostart-diagnostics t)
-          (rtags-diagnostics)
-          (setq rtags-completions-enabled t)
-          (push 'company-rtags company-backends)
-          (company-mode 1)
-          (rtags-enable-standard-keybindings)  
-          (define-key c-mode-base-map (kbd "<C-tab>") (function company-complete))
-          )
-
-  (defcustom use-rtags t
-    "Use rtags? Might not want to use it if you have other backend for code indexing"
-    :group 'tianshuo-setup
-    :type 'boolean)
-
-  (if use-rtags
-      (check-install (list 'company 'rtags 'company-rtags) (lambda ()
-                                                             (message "enabling rtags setup")
-                                                             (add-hook 'c-mode-hook 'rtags-auto-complete-setup)
-                                                             (add-hook 'c++-mode-hook 'rtags-auto-complete-setup)
-                                                             )))
+  (add-hook 'c-mode-hook #'flycheck-mode)
+  (add-hook 'c++-mode-hook #'flycheck-mode)
 #+END_SRC
-*** Integrating RTags with Flycheck
-Actually may be rtags-diagnoistics is awesome enough!
+* Bazel
 #+BEGIN_SRC emacs-lisp
-  (defun my-flycheck-rtags-setup ()
-    (require 'flycheck-rtags)  
-    (flycheck-select-checker 'rtags)
-    (setq-local flycheck-highlighting-mode nil) ;; RTags creates more accurate overlays.
-    (setq-local flycheck-check-syntax-automatically nil)
-    (flycheck-mode 1)
-    )
-
-  (if use-rtags
-      (check-install 'flycheck-rtags (lambda()
-                                       (add-hook 'c-mode-hook #'my-flycheck-rtags-setup)
-                                       (add-hook 'c++-mode-hook #'my-flycheck-rtags-setup)
-                                       (add-hook 'objc-mode-hook #'my-flycheck-rtags-setup)    
-                                       )))
+;;   (require 'flycheck)
+;;   (flycheck-define-checker bazel
+;;         "Bazel flychecker"
+;;         :command ("bazel" "build" "//...")
+;;         :error-patterns
+;;       ((error line-start
+;;	    (one-or-more not-newline) "/" (file-name) ":" line
+;;	    ":" column " error: "
+;;	    (message (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline)) line-end))
+;;         :modes c++-mode)
+;;  (add-to-list 'flycheck-checkers 'bazel)
 #+END_SRC
-
-*** run rc to tell rdm how to compile your project
-Run make -nk | rc -c -
-
-Then run-rc function defined below will run the Make command for you
-#+BEGIN_SRC emacs-lisp
-  (defun find-make-file ()
-    (interactive)
-    (message (or
-              (locate-dominating-file (buffer-file-name) "Makefile") ;; rdm uses Makefile to detect project root!!
-              (locate-dominating-file (buffer-file-name) "makefile")) ;; not sure if rdm recognize 'makefile'
-             )
-    )
-  (defun run-rc ()
-    (interactive)
-    (let ((make-dir (find-make-file)))
-      (if make-dir
-          (progn
-            (message (concat "will run: make -Bnp " make-dir))
-            (let* ((default-directory make-dir)
-                   (make-cmd (read-string (concat make-dir " $") "make -Bnk | rc -c -"))
-                   )
-              (shell-command make-cmd "*rc-output*")
-              (rtags-stop-diagnostics)  ;; restart rtags diagnostics to pick up the change
-              (rtags-diagnostics)
-              )
-            )
-        (message "[WARNING]can not find make file, abort! rtags may not recognize the project root correctly")
-        )
-      )
-    )
-
-#+END_SRC
-
-*** Keybindings
-
-| Keybinding prefixed  by(C-c r) | Function                         |
-|--------------------------------+----------------------------------|
-| .                              | find symbol at point, definition |
-| >                              | find symbol by name              |
-| <                              | find references                  |
-|                                |                                  |
-|                                |                                  |
-
-#+BEGIN_SRC emacs-lisp
-  (if use-rtags
-  (check-install 'rtags (lambda ()
-                  (with-eval-after-load 'rtags
-                  (rtags-enable-standard-keybindings))
-  )))
-#+END_SRC
-
 * Window Management
 ** Prevent emacs from splitting windows aggresively
 http://blog.mpacula.com/2012/01/28/howto-prevent-emacs-from-splitting-windows/
