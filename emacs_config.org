@@ -18,65 +18,62 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 ** Melpa
 
 #+BEGIN_SRC emacs-lisp
-  ;; enable packages
-  (require 'package) ;; You might already have this line
-;;    (add-to-list 'package-archives
-;;                 '("melpa" . "https://melpa.org/packages/"))
+    ;; enable packages
+    (require 'package) ;; You might already have this line
 
-  (add-to-list 'package-archives
-               '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+  ;; https://emacs.stackexchange.com/questions/2969/is-it-possible-to-use-both-melpa-and-melpa-stable-at-the-same-time
+(setq package-archives
+      '(("GNU ELPA"     . "https://elpa.gnu.org/packages/")
+        ("MELPA Stable" . "https://stable.melpa.org/packages/")
+        ("MELPA"        . "https://melpa.org/packages/"))
+      package-archive-priorities
+      '(("MELPA Stable" . 10)
+        ("GNU ELPA"     . 5)
+        ("MELPA"        . 0)))
 
-    ;; (when (< emacs-major-version 24)
-    ;;   ;; For important compatibility libraries like cl-lib
-  ;;    (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))) 
-  (package-initialize) ;; You might already have this line
+    (package-initialize) ;; You might already have this line
 #+END_SRC
+
+#+RESULTS:
 
 ** Auto install packages
 
 Macros and functions to support install a plugin
 #+BEGIN_SRC emacs-lisp
-    (defun check-package-install (package-name)
-      (if (package-installed-p package-name)
-          (progn
-            (message "%s is installed :)" package-name)
-            t
-            )
-        (progn
-          (if (y-or-n-p (format "install %s" package-name))
-              (progn
-                (message "installing %s ..." package-name)
-                (unless package-archive-contents
-                  (package-refresh-contents))
-                (package-install package-name)
-                t
-                )
-            (progn
-              (message "skipping install %s" package-name)
-              nil
-              )
-            )
-          )
-        )
+  (defun check-package-install (package-name)
+    (if (package-installed-p package-name)
+	(progn
+	  (message "%s is installed :)" package-name)
+	  t
+	  )
+      (progn
+	(message "installing %s ..." package-name)
+	(unless package-archive-contents
+	  (package-refresh-contents))
+	(package-install package-name)
+	t
+	)
+
       )
+    )
 
   (defun check-install (package-name &optional func)
     (interactive)
     (if 
-        (cond ((listp package-name)
-               (progn
-                 (cl-reduce (lambda (x y) (and x y)) (cl-map 'list 'check-package-install package-name) :initial-value t)
-                 )
-               )
-              ((symbolp package-name)
-               (check-package-install package-name)
-               )
-              )
+	(cond ((listp package-name)
+	       (progn
+		 (cl-reduce (lambda (x y) (and x y)) (cl-map 'list 'check-package-install package-name) :initial-value t)
+		 )
+	       )
+	      ((symbolp package-name)
+	       (check-package-install package-name)
+	       )
+	      )
 
-        (if func
-            (funcall func)) ;; if all installed
+	(if func
+	    (funcall func)) ;; if all installed
       (message "Not installed %s, ignoring func" package-name)
-        );;if
+      );;if
     )
 #+END_SRC
 
@@ -116,12 +113,12 @@ Add languages supports
 
 * Basic Emacs Configuration
 
-** Disable Startup message
+** Disable startup message
 #+BEGIN_SRC emacs-lisp
-  ;;(setq inhibit-startup-message t)
+  (setq inhibit-startup-screen t)
 #+END_SRC
 
-** Terminal Mouse
+** Enable mouse support in terminal
 #+BEGIN_SRC emacs-lisp
 (xterm-mouse-mode 1)
 #+END_SRC
@@ -131,7 +128,7 @@ Add languages supports
 ;;(setq initial-buffer-choice (lambda () (list-bookmarks) (get-buffer "*Bookmark List*")))
 #+END_SRC
 
-** Temp File settings
+** Put temp files in temp directory
 #+BEGIN_SRC emacs-lisp
   (setq backup-directory-alist
         `((".*" . ,temporary-file-directory)))
@@ -141,14 +138,6 @@ Add languages supports
    (setenv "TMPDIR" "/tmp")
 #+END_SRC
 
-** Desktop settings
-#+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'desktop
-  (setq desktop-restore-frames t)
-  (setq desktop-restore-in-current-display t)
-  (setq desktop-restore-forces-onscreen nil))
-#+END_SRC
-
 ** Keep buffer in sync with file on disk
 #+BEGIN_SRC emacs-lisp
   (global-auto-revert-mode t)
@@ -156,20 +145,19 @@ Add languages supports
 #+END_SRC
 
 ** Clipboard, copy/paste
-
-TODO: following code needs revisit
+Use either osc52, xclip or osx-clipboard.
 #+BEGIN_SRC emacs-lisp
   (defun clip-use-osx ()
     "Copy to osx's clipboard directly, this is useful for osx's terminal \
-      which does not support osc52"
+              which does not support osc52"
     (interactive)
     (check-install 'osx-clipboard (lambda()
                                     (osx-clipboard-mode +1))))
 
   (defun clip-use-xclip ()
     "Copy to linux's paste board directly with xclip, need to make sure xclip \
-      is installed on the system.  This is useful only when using gnome-terminal \
-      which does not support osc52"
+              is installed on the system.  This is useful only when using gnome-terminal \
+              which does not support osc52"
     (interactive)
     (check-install 'xclip (lambda()
                             (require 'xclip)
@@ -182,27 +170,21 @@ TODO: following code needs revisit
 
   (defun clip-use-osc52 ()
     "Use osc52 to paste, should support remote terminal, even within tmux.  In \
-      unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
-      escape characters being displayed on the screen"
+              unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
+              escape characters being displayed on the screen"
     (interactive)
     (require 'osc52e)
     (osc52-set-cut-function))
 
-
-  (clip-use-osc52)
-  ;; default to using osc52
-  ;;  (clip-use-osc52)
-  ;;  (if (in-ssh)
-  ;;      (progn
-  ;;        (message "in ssh, using osc52")
-  ;;        (clip-use-osc52)
-  ;;        )
-  ;;    (progn
-  ;;      (message "not in ssh, use xclip")
-  ;;      (clip-use-xclip)
-  ;;      )
-  ;;    )
-
+  ;; OSX
+  (if (string-equal system-type "darwin")
+          (clip-use-osx))
+  ;; Linux
+  (if (string-equal system-type "gnu/linux")
+      (if (in-ssh)
+          (clip-use-osc52)
+        (clip-use-xclip))
+    )
 
 #+END_SRC
 
@@ -210,7 +192,7 @@ TODO: following code needs revisit
 You don't always want to open the link when clicking on it, especially when in a
 remote emacs session, since it will open the browser in remote host.
 #+BEGIN_SRC emacs-lisp
-  ;; browse to cut. By default, if you click a link in org mode in emacs, it will
+  ;; Browse to cut. By default, if you click a link in org mode in emacs, it will
   ;; open the browser on the machine where emacs was launched. This means if you
   ;; ssh/tmux into a server, clicking the org link will open a new window on the
   ;; server but not the client machine, so on the client you will see nothing
@@ -247,7 +229,7 @@ remote emacs session, since it will open the browser in remote host.
 ** Center Cursor Mode
 Just call =centered-cursor-mode=, it's an autoload function.
 
-** Fix PATH when executing a shell command within GUI emacs
+** Fix PATH when executing a shell command from GUI emacs
 #+BEGIN_SRC emacs-lisp
   (check-install 'exec-path-from-shell
                  (lambda () (when (memq window-system '(mac ns))
@@ -275,13 +257,12 @@ Just call =centered-cursor-mode=, it's an autoload function.
                       )) ;; hide toolbar in gui mode
 #+END_SRC
 
-
 ** Hide menu bar
 #+BEGIN_SRC emacs-lisp
 (menu-bar-mode 0)
 #+END_SRC
 ** No tabs
-Tabs makes things hard when you have different tab-width.
+Spaces > tabs. Avoid confusion of different tab-width.
 #+BEGIN_SRC emacs-lisp
   (setq-default indent-tabs-mode nil)
 #+END_SRC
@@ -302,17 +283,6 @@ Tabs makes things hard when you have different tab-width.
         (when matching-text (message matching-text))))
 #+END_SRC
 
-** Highlight current line
-Actually highlight current line is a bad idea. It's hard to find a color that
-works with both white and dark background.
-   #+BEGIN_SRC emacs-lisp
-;;  (set-face-foreground 'highlight nil)
-;;  (global-hl-line-mode 1)
-;;  (custom-set-faces
-;;   '(hl-line ((t (:inherit nil :extend t :background "color-233")))))
-    ;;(global-visual-line-mode 1)
-#+END_SRC
-
 ** Theme
 #+BEGIN_SRC emacs-lisp
   (custom-set-variables
@@ -325,7 +295,7 @@ works with both white and dark background.
   (electric-pair-mode +1)
 #+END_SRC
 
-** Remember last location for each file
+** Remember last location
 #+BEGIN_SRC emacs-lisp
 (save-place-mode 1) 
 #+END_SRC
@@ -351,23 +321,24 @@ Borrowed from: https://emacs.stackexchange.com/questions/47091/stop-emacs-from-r
 #+END_SRC
 
 ** Add some marging to buffer for better looking
+Disabling this because there is a bug will cause not being able to resize
+windows when margin is
+set. https://github.com/emacsorphanage/git-gutter/issues/162
 #+BEGIN_SRC emacs-lisp
-  ;;Disabling this because there is a bug will cause not being
-  ;; able to resize windows when margin is set. https://github.com/emacsorphanage/git-gutter/issues/162
   ;;(setq-default left-margin-width 2 right-margin-width 2)
 #+END_SRC
 ** Capslock binding
-Since I usually rebind Caps lock key to control, I need another binding for the Caps lock function.
+Since I usually rebind Caps lock key to control, I need another binding for the
+Caps lock function. Caps lock is useful in C++ code.
 #+BEGIN_SRC emacs-lisp
   (check-install 'caps-lock (lambda()
-                                   (global-set-key (kbd "C-x c") 'caps-lock-mode)
-                                   ))
-
+                              (global-set-key (kbd "C-x c") 'caps-lock-mode)
+                              ))
 #+END_SRC
 * Ivy
 Ivy User Manual: https://oremacs.com/swiper/.  
 
-Can trigger different actions on a selected item by pressing M-o on
+Can trigger different actions on a selected item by pressing *M-o* on
 the highlighted item.
 
 C-j to select current directory candidate and a start a new session.
@@ -388,12 +359,29 @@ C-j to select current directory candidate and a start a new session.
 
 #+END_SRC
 
-* Dired
-Add useful command shortcuts
+* Dired and files
+Add useful command shortcuts. Press "e" to edit file name in-place.
+Press "i" to insert subdir.
+Press "k" to kill subdir.
 #+BEGIN_SRC emacs-lisp
 (require 'dired)
 (define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
 (define-key dired-mode-map "k" 'dired-kill-subdir)
+#+END_SRC
+
+** Shortcut for delete file and current buffer
+#+BEGIN_SRC emacs-lisp
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (if filename
+        (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+            (progn
+              (delete-file filename)
+              (message "Deleted file %s." filename)
+              (kill-buffer)))
+      (message "Not a file visiting buffer!"))))
 #+END_SRC
 
 * Search & Jump
@@ -402,26 +390,16 @@ C-u C-SPC C-SPC... to keep poping marks
 #+BEGIN_SRC emacs-lisp
   (setq set-mark-command-repeat-pop t)
 #+END_SRC
-** imenu for inbuffer navigation
+** F12 to use imenu for inbuffer navigation
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "<f12>") 'imenu-list)
+  (global-set-key (kbd "<f12>") 'counsel-imenu)
 #+END_SRC
-** ace-jump-mode
+** C-c j to use ace-jump
 #+BEGIN_SRC emacs-lisp
   (check-install 'ace-jump-mode (lambda () (global-set-key (kbd "C-c j") 'ace-jump-mode)))
 #+END_SRC
-** Semantic mode, jump to definition
-semantic mode is included in emacs by default.
-http://tuhdo.github.io/c-ide.html#sec-2
 
-#+BEGIN_SRC emacs-lisp
-;;  (add-hook 'c-mode-common-hook (lambda ()
-;;                                  (semantic-mode)
-;;                                  (define-key semantic-mode-map (kbd "M-.") 'semantic-ia-fast-jump)                                
-;;                                  ))
-#+END_SRC
-
-** Highlight symbol under cursor, and jump to next one
+** Highlight symbol under cursor with C-c h s
 #+BEGIN_SRC emacs-lisp
   (check-install 'highlight-symbol (lambda () 
                                            (global-set-key (kbd "M-n") 'highlight-symbol-next)
@@ -635,107 +613,28 @@ Some key concepts of style checking for python
 To beautify your python file, 
 
 * C and CPP IDE
-** Rtags
-*** Auto completion and diagnostics(highlighting errors)
-https://github.com/Andersbakken/rtags
-Following configurations are from the "Code completion in Emacs" section.
 #+BEGIN_SRC emacs-lisp
-    ;; rtag company for auto completion
-    (defun rtags-auto-complete-setup ()
-          (require 'rtags)
-          (require 'company)
-          (rtags-start-process-unless-running)
-          (setq rtags-autostart-diagnostics t)
-          (rtags-diagnostics)
-          (setq rtags-completions-enabled t)
-          (push 'company-rtags company-backends)
-          (company-mode 1)
-          (rtags-enable-standard-keybindings)  
-          (define-key c-mode-base-map (kbd "<C-tab>") (function company-complete))
-          )
-
-  (defcustom use-rtags t
-    "Use rtags? Might not want to use it if you have other backend for code indexing"
-    :group 'tianshuo-setup
-    :type 'boolean)
-
-  (if use-rtags
-      (check-install (list 'company 'rtags 'company-rtags) (lambda ()
-                                                             (message "enabling rtags setup")
-                                                             (add-hook 'c-mode-hook 'rtags-auto-complete-setup)
-                                                             (add-hook 'c++-mode-hook 'rtags-auto-complete-setup)
-                                                             )))
+  (add-hook 'c-mode-hook #'flycheck-mode)
+  (add-hook 'c++-mode-hook #'flycheck-mode)
 #+END_SRC
-*** Integrating RTags with Flycheck
-Actually may be rtags-diagnoistics is awesome enough!
+* Bazel
 #+BEGIN_SRC emacs-lisp
-  (defun my-flycheck-rtags-setup ()
-    (require 'flycheck-rtags)  
-    (flycheck-select-checker 'rtags)
-    (setq-local flycheck-highlighting-mode nil) ;; RTags creates more accurate overlays.
-    (setq-local flycheck-check-syntax-automatically nil)
-    (flycheck-mode 1)
-    )
-
-  (if use-rtags
-      (check-install 'flycheck-rtags (lambda()
-                                       (add-hook 'c-mode-hook #'my-flycheck-rtags-setup)
-                                       (add-hook 'c++-mode-hook #'my-flycheck-rtags-setup)
-                                       (add-hook 'objc-mode-hook #'my-flycheck-rtags-setup)    
-                                       )))
+;;   (require 'flycheck)
+;;   (flycheck-define-checker bazel
+;;         "Bazel flychecker"
+;;         :command ("bazel" "build" "//...")
+;;         :error-patterns
+;;       ((error line-start
+;;	    (one-or-more not-newline) "/" (file-name) ":" line
+;;	    ":" column " error: "
+;;	    (message (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline) "\n"
+;;		     (one-or-more not-newline)) line-end))
+;;         :modes c++-mode)
+;;  (add-to-list 'flycheck-checkers 'bazel)
 #+END_SRC
-
-*** run rc to tell rdm how to compile your project
-Run make -nk | rc -c -
-
-Then run-rc function defined below will run the Make command for you
-#+BEGIN_SRC emacs-lisp
-  (defun find-make-file ()
-    (interactive)
-    (message (or
-              (locate-dominating-file (buffer-file-name) "Makefile") ;; rdm uses Makefile to detect project root!!
-              (locate-dominating-file (buffer-file-name) "makefile")) ;; not sure if rdm recognize 'makefile'
-             )
-    )
-  (defun run-rc ()
-    (interactive)
-    (let ((make-dir (find-make-file)))
-      (if make-dir
-          (progn
-            (message (concat "will run: make -Bnp " make-dir))
-            (let* ((default-directory make-dir)
-                   (make-cmd (read-string (concat make-dir " $") "make -Bnk | rc -c -"))
-                   )
-              (shell-command make-cmd "*rc-output*")
-              (rtags-stop-diagnostics)  ;; restart rtags diagnostics to pick up the change
-              (rtags-diagnostics)
-              )
-            )
-        (message "[WARNING]can not find make file, abort! rtags may not recognize the project root correctly")
-        )
-      )
-    )
-
-#+END_SRC
-
-*** Keybindings
-
-| Keybinding prefixed  by(C-c r) | Function                         |
-|--------------------------------+----------------------------------|
-| .                              | find symbol at point, definition |
-| >                              | find symbol by name              |
-| <                              | find references                  |
-|                                |                                  |
-|                                |                                  |
-
-#+BEGIN_SRC emacs-lisp
-  (if use-rtags
-  (check-install 'rtags (lambda ()
-                  (with-eval-after-load 'rtags
-                  (rtags-enable-standard-keybindings))
-  )))
-#+END_SRC
-
 * Window Management
 ** Prevent emacs from splitting windows aggresively
 http://blog.mpacula.com/2012/01/28/howto-prevent-emacs-from-splitting-windows/
@@ -763,7 +662,7 @@ Super useful function:
     (winner-mode 1))
 #+END_SRC
 
-** Ace window
+** Ace window with C-x o
 #+BEGIN_SRC emacs-lisp
   (check-install 'ace-window (lambda ()
                   (global-set-key (kbd "C-x o") 'ace-window)
@@ -771,10 +670,6 @@ Super useful function:
   ))
 #+END_SRC
 
-** Switch buffer using Command-Return
-#+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "s-b") 'switch-to-buffer)
-#+END_SRC
 ** Jump to window configuration using Command keys
 #+BEGIN_SRC emacs-lisp
 
