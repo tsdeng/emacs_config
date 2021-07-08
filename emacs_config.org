@@ -372,18 +372,19 @@ the highlighted item.
 
 C-j to select current directory candidate and a start a new session.
 #+BEGIN_SRC emacs-lisp
-    ;; counsel will bring ivy and swiper as dependency.
-    (check-install 'counsel (lambda()
-                              (counsel-mode 1)
-                              (setq counsel-find-file-at-point t)
-                              (setq counsel-preselect-current-file t)
-                              (setq ivy-use-virtual-buffers t
-                                    ivy-count-format "%d/%d ")
-                              (global-set-key (kbd "C-x C-r") 'counsel-recentf)
-                              (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
-                              (global-set-key (kbd "M-s") 'swiper)
-                              (global-set-key (kbd "C-c C-r") 'ivy-resume)
-    ))
+  ;; counsel will bring ivy and swiper as dependency.
+  (check-install 'counsel (lambda()
+                            (counsel-mode 1)
+                            (setq counsel-find-file-at-point t)
+                            (setq counsel-preselect-current-file t)
+                            (setq ivy-use-virtual-buffers t
+                                  ivy-count-format "%d/%d ")
+                            (global-set-key (kbd "C-x C-r") 'counsel-recentf)
+                            (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+                            (global-set-key [f8] 'ivy-switch-buffer)
+                            (global-set-key (kbd "M-s") 'swiper)
+                            (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  ))
 
 #+END_SRC
 
@@ -750,11 +751,18 @@ Super useful function:
 #+BEGIN_SRC emacs-lisp
 (setq desktop-path '("~" "~/.emacs.d/"))
 #+END_SRC
+
+** F7 and F9 to switch buffer quickly
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [f7] 'previous-buffer)
+  (global-set-key [f9] 'next-buffer)
+#+END_SRC
 ** Winner mode
 #+BEGIN_SRC emacs-lisp
   (when (fboundp 'winner-mode)
     (winner-mode 1))
 #+END_SRC
+
 ** Ace window
 #+BEGIN_SRC emacs-lisp
   (check-install 'ace-window (lambda ()
