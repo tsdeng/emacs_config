@@ -335,6 +335,17 @@ Caps lock function. Caps lock is useful in C++ code.
                               (global-set-key (kbd "C-x c") 'caps-lock-mode)
                               ))
 #+END_SRC
+
+** fill-column 80
+
+Some discussions:
+- https://hackernoon.com/does-column-width-of-80-make-sense-in-2018-50c161fbdcf6
+- https://stackoverflow.com/questions/578059/studies-on-optimal-code-width
+
+#+BEGIN_SRC emacs-lisp
+(setq-default fill-column 80)
+#+END_SRC
+   
 * Ivy
 Ivy User Manual: https://oremacs.com/swiper/.  
 
@@ -937,8 +948,9 @@ the documents.
 #+BEGIN_SRC emacs-lisp
   (check-install 'imenu-list)
   (custom-set-variables
-  '(imenu-list-position 'left)
-  )
+   '(imenu-list-position 'left)
+   )
+  (global-set-key (kbd "C-c m") #'imenu-list-smart-toggle)
 #+END_SRC
 * Take Screen Shot
 #+BEGIN_SRC emacs-lisp
