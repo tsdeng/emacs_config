@@ -795,7 +795,7 @@ Super useful function:
 *** Basic config
 #+BEGIN_SRC emacs-lisp
   (check-install 'magit (lambda ()
-  (global-set-key (kbd "C-c g") 'magit-status)
+  (global-set-key (kbd "C-c m g") 'magit-status)
   (global-set-key (kbd "C-c M-g") 'magit-dispatch-popup)))
 #+END_SRC
 
