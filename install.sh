@@ -1,4 +1,4 @@
-# 1. Copy emacs_config.org to ~/.emacs.d
+# 1. Link emacs_config.org to ~/.emacs.d
 if [ ! -d ~/.emacs.d ]; then
     echo "~/.emacs.d does not exist, creating one..."
     mkdir ~/.emacs.d
@@ -6,29 +6,25 @@ fi
 
 ln -Fns $(pwd)/emacs_config.org ~/.emacs.d/emacs_config.org
 
-# 2. modify .emacs to read emacs_config.org
-
+# 2. Modify .emacs to read emacs_config.org
 if [ ! -f ~/.emacs ]; then
     echo "~/.emacs does not exist, creating one..."
     touch ~/.emacs
 fi
 
-function insert_to_dot_emacs() {
-    CONTENT=$1
-    # -F means fixed string, -x means exactly match whole line. -q means quiet.
-    if ! grep -Fxq "$CONTENT" ~/.emacs; then
-        echo "updating .emacs with: $CONTENT"
-        # using printf here because BSD's echo does not recognize \n.
-        # https://lists.freebsd.org/pipermail/freebsd-questions/2011-December/236645.html
-        printf "$CONTENT\n$(cat ~/.emacs)" > ~/.emacs
-    fi
-}
 
-# The following lines will add content in reverse order.
-insert_to_dot_emacs '(org-babel-load-file "~/.emacs.d/emacs_config.org")'
-insert_to_dot_emacs '(setq vc-follow-symlinks t)'
+# 3. Delete old config if any.
+sed -I.old '/BEGIN load custom emacs_config.org/,/END load custom emacs_config.org/d' ~/.emacs
 
-# 3. ln elisp folder to ~/.emacs.d/elisp, the -n makes sure if the
+# 4. Add new config bootstrap code.
+printf ";;BEGIN load custom emacs_config.org
+(setq gc-cons-threshold-original gc-cons-threshold)
+(setq gc-cons-threshold (* 1024 1024 100))
+(setq vc-follow-symlinks t)
+(org-babel-load-file \"~/.emacs.d/emacs_config.org\")
+;;END load custom emacs_config.org\n$(cat ~/.emacs)" > ~/.emacs
+
+# 5. ln elisp folder to ~/.emacs.d/elisp, the -n makes sure if the
 # symlink already exists, it does not follow it and create a nested
 # link.
 ln -Fns $(pwd)/elisp ~/.emacs.d/elisp

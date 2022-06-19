@@ -203,6 +203,10 @@ confirmation when executing a code block when =C-c C-c=
     (setq inhibit-startup-screen t)
     )
 
+  (defconfig enable-mouse t
+    (xterm-mouse-mode 1)
+    )
+
   (defconfig temp-file-to-temp-dir t
     (setq backup-directory-alist
           `((".*" . ,temporary-file-directory)))
@@ -606,24 +610,24 @@ Some key concepts of style checking for python
 #+END_SRC
 * C and CPP IDE
 #+BEGIN_SRC emacs-lisp
-  ;;  (defconfig c-use-lsp-automatically t
-  ;;    (defun c-setup ()
-  ;;      (if (locate-dominating-file "." "compile_commands.json")
-  ;;          (progn
-  ;;            (message "found compile_command.json, enabling lsp-mode")
-  ;;            ;;(flycheck-mode)
-  ;;            (lsp)
-  ;;            )
-  ;;          )
-  ;;      )
-  ;;  (check-install 'lsp-mode (lambda()
-  ;;    (with-eval-after-load 'cc-mode
-  ;;      (message "Added c-mode hooks!!!!")
-  ;;      (add-hook 'c-mode-hook #'c-setup)
-  ;;      (add-hook 'c++-mode-hook #'c-setup)
-  ;;    )
-  ;;    ))
-  ;;  )
+  (defconfig c-use-lsp-automatically t
+    (defun c-setup ()
+      (if (locate-dominating-file "." "compile_commands.json")
+          (progn
+            (message "found compile_command.json, enabling lsp-mode")
+            ;;(flycheck-mode)
+            (lsp)
+            )
+          )
+      )
+  (check-install 'lsp-mode (lambda()
+    (with-eval-after-load 'cc-mode
+      (message "Added c-mode hooks!!!!")
+      (add-hook 'c-mode-hook #'c-setup)
+      (add-hook 'c++-mode-hook #'c-setup)
+    )
+    ))
+  )
 #+END_SRC
 * YAML
 #+BEGIN_SRC emacs-lisp
