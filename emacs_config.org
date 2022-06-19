@@ -17,37 +17,34 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
 #+BEGIN_SRC emacs-lisp
   (defgroup my-config nil "Group for my emacs config" :group 'tools)
 
-  (defcustom my-config-initialized nil "If non-nil, means not
-      initilized" :group 'my-config :type 'boolean )
-
   ;; Learnt the function macro trick from here:
   ;; https://mullikine.github.io/posts/macro-tutorial/ C-h R elisp i ,@
   ;; <RET>
   (defmacro defconfig (name default-value &rest body)
     "Define custom config guarded by a boolean switch."
     (let* ((bh (car body))
-	   (bt (cdr body))
-	   (desc (if (stringp bh)
-		     bh
-		   ""))
-	   (body (if (stringp bh)
-		     bt
-		   body
-		   )
-		 ))
+           (bt (cdr body))
+           (desc (if (stringp bh)
+                     bh
+                   ""))
+           (body (if (stringp bh)
+                     bt
+                   body
+                   )
+                 ))
       `(progn
-	 (defcustom ,name ,default-value
-	   ,desc
-	   :group 'my-config
-	   :type 'boolean)
-	 (add-hook 'after-init-hook
-		   (lambda() (if ,name
-				 (progn
-				 ,@body
-				 )
-				 ))
-		   :append)
-	 )))
+         (defcustom ,name ,default-value
+           ,desc
+           :group 'my-config
+           :type 'boolean)
+         (add-hook 'after-init-hook
+                   (lambda() (if ,name
+                                 (progn
+                                   ,@body
+                                   )
+                               ))
+                   :append)
+         )))
 
 #+END_SRC
 
@@ -69,7 +66,7 @@ Manually maintained lisp files are in the ~/.emacs.d/elisp folder.
                 ("MELPA"        . 0)))
       )
     (package-initialize
-    ))
+     ))
 
 #+END_SRC
 
@@ -121,14 +118,14 @@ confirmation when executing a code block when =C-c C-c=
   (defconfig literate-programming-in-org t
     (with-eval-after-load 'org
       (setq org-confirm-babel-evaluate nil
-	    org-src-fontify-natively t
-	    org-src-tab-acts-natively t)
+            org-src-fontify-natively t
+            org-src-tab-acts-natively t)
       (org-babel-do-load-languages
        'org-babel-load-languages
        '(
-	 (emacs-lisp . t)
-	 (sql . t)
-	 ))
+         (emacs-lisp . t)
+         (sql . t)
+         ))
       )
     )
 #+END_SRC
@@ -139,9 +136,9 @@ confirmation when executing a code block when =C-c C-c=
   (defconfig basic-term-config t
     "Enable mouse support. C-c C-y to paste"
     (with-eval-after-load "term"
-    (xterm-mouse-mode 1)
-    (define-key term-raw-map (kbd "C-c C-y") 'term-paste)
-    ))
+      (xterm-mouse-mode 1)
+      (define-key term-raw-map (kbd "C-c C-y") 'term-paste)
+      ))
 #+END_SRC
 
 ** F2 to create terminal
@@ -150,17 +147,17 @@ confirmation when executing a code block when =C-c C-c=
     (with-eval-after-load "compile"
       (require 'ansi-color)
       (defun colorize-compilation-buffer ()
-	(toggle-read-only)
-	(ansi-color-apply-on-region (point-min) (point-max))
-	(toggle-read-only))
+        (toggle-read-only)
+        (ansi-color-apply-on-region (point-min) (point-max))
+        (toggle-read-only))
       (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
       (setq compilation-scroll-output t)
       )
 
     ;;disable hl mode for terminal
     (add-hook 'term-mode-hook (lambda ()
-				(setq-local global-hl-line-mode
-					    nil)))
+                                (setq-local global-hl-line-mode
+                                            nil)))
 
     (defadvice ansi-term (after advice-term-line-mode activate)
       (visual-line-mode -1) ;; avoid weird line wrapping issue
@@ -178,24 +175,24 @@ confirmation when executing a code block when =C-c C-c=
       (interactive)
       (require 'term)
       (let ((is-term (string= "term-mode" major-mode))
-	    (is-running (term-check-proc (buffer-name)))
-	    (term-cmd "/bin/zsh")
-	    (anon-term (get-buffer "*ansi-term*")))
-	(if is-term
-	    (if is-running
-		(if (string= "*ansi-term*" (buffer-name))
-		    (call-interactively 'rename-buffer)
-		  (if anon-term
-		      (switch-to-buffer "*ansi-term*")
-		    (ansi-term term-cmd)))
-	      (kill-buffer (buffer-name))
-	      (ansi-term term-cmd))
-	  (if anon-term
-	      (if (term-check-proc "*ansi-term*")
-		  (switch-to-buffer "*ansi-term*")
-		(kill-buffer "*ansi-term*")
-		(ansi-term term-cmd))
-	    (ansi-term term-cmd)))))
+            (is-running (term-check-proc (buffer-name)))
+            (term-cmd "/bin/zsh")
+            (anon-term (get-buffer "*ansi-term*")))
+        (if is-term
+            (if is-running
+                (if (string= "*ansi-term*" (buffer-name))
+                    (call-interactively 'rename-buffer)
+                  (if anon-term
+                      (switch-to-buffer "*ansi-term*")
+                    (ansi-term term-cmd)))
+              (kill-buffer (buffer-name))
+              (ansi-term term-cmd))
+          (if anon-term
+              (if (term-check-proc "*ansi-term*")
+                  (switch-to-buffer "*ansi-term*")
+                (kill-buffer "*ansi-term*")
+                (ansi-term term-cmd))
+            (ansi-term term-cmd)))))
     (global-set-key (kbd "<f2>") 'visit-ansi-term)
     )
 #+END_SRC
@@ -208,9 +205,9 @@ confirmation when executing a code block when =C-c C-c=
 
   (defconfig temp-file-to-temp-dir t
     (setq backup-directory-alist
-	  `((".*" . ,temporary-file-directory)))
+          `((".*" . ,temporary-file-directory)))
     (setq auto-save-file-name-transforms
-	  `((".*" ,temporary-file-directory t)))
+          `((".*" ,temporary-file-directory t)))
     ;; fix 'controll path too long' issue when using tramp
     (setenv "TMPDIR" "/tmp")
     )
@@ -224,19 +221,19 @@ confirmation when executing a code block when =C-c C-c=
     "Use either osc52, xclip or osx-clipboard."
     (defun clip-use-osx ()
       "Copy to osx's clipboard directly, this is useful for osx's terminal \
-	       which does not support osc52"
+               which does not support osc52"
       (interactive)
       (check-install 'osx-clipboard (lambda()
-				      (osx-clipboard-mode +1))))
+                                      (osx-clipboard-mode +1))))
 
     (defun clip-use-xclip ()
       "Copy to linux's paste board directly with xclip, need to make sure xclip \
-	       is installed on the system.  This is useful only when using gnome-terminal \
-	       which does not support osc52"
+               is installed on the system.  This is useful only when using gnome-terminal \
+               which does not support osc52"
       (interactive)
       (check-install 'xclip (lambda()
-			      (require 'xclip)
-			      (xclip-mode))))
+                              (require 'xclip)
+                              (xclip-mode))))
     (defun in-ssh ()
       (interactive)
       "if I'm in ssh"
@@ -245,20 +242,20 @@ confirmation when executing a code block when =C-c C-c=
 
     (defun clip-use-osc52 ()
       "Use osc52 to paste, should support remote terminal, even within tmux.  In \
-	       unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
-	       escape characters being displayed on the screen"
+               unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
+               escape characters being displayed on the screen"
       (interactive)
       (require 'osc52e)
       (osc52-set-cut-function))
 
     ;; OSX
     (if (string-equal system-type "darwin")
-	(clip-use-osx))
+        (clip-use-osx))
     ;; Linux
     (if (string-equal system-type "gnu/linux")
-	(if (in-ssh)
-	    (clip-use-osc52)
-	  (clip-use-xclip))
+        (if (in-ssh)
+            (clip-use-osc52)
+          (clip-use-xclip))
       )
     )
 
@@ -289,24 +286,24 @@ confirmation when executing a code block when =C-c C-c=
 
   (defconfig fix-shell-path-in-gui-emacs t
     "Fix PATH when executing a shell command from GUI emacs"
-      (check-install 'exec-path-from-shell
-		 (lambda () (when (memq window-system '(mac ns))
-		    (exec-path-from-shell-initialize))))
+    (check-install 'exec-path-from-shell
+                   (lambda () (when (memq window-system '(mac ns))
+                                (exec-path-from-shell-initialize))))
     )
 
   (defconfig use-recent-files-buffer t
     (with-eval-after-load 'recentf
       (recentf-mode t) ;; enable recent files mode. it's autoloaded function.
       (setq recentf-max-saved-items 10)
-    )
+      )
     )
 
   (defconfig gui-hide-toolbar-scrollbar t
-      (setq-default frame-title-format "%b (%f)")
-      (if window-system (progn
-		      (tool-bar-mode -1)
-		      (scroll-bar-mode -1)
-		      ))
+    (setq-default frame-title-format "%b (%f)")
+    (if window-system (progn
+                        (tool-bar-mode -1)
+                        (scroll-bar-mode -1)
+                        ))
     )
 
   (defconfig hide-menu-bar t
@@ -318,21 +315,21 @@ confirmation when executing a code block when =C-c C-c=
     )
 
   (defconfig no-tabs t
-      (setq-default indent-tabs-mode nil))
+    (setq-default indent-tabs-mode nil))
 
   (defconfig show-matching-parens t
-      (show-paren-mode 1) ;; show matching paren
-  (defadvice show-paren-function
-      (after show-matching-paren-offscreen activate)
-    "If the matching paren is offscreen, show the matching line in the
-	echo area. Has no effect if the character before point is not of
-	the syntax class."
-    (interactive)
-    (let* ((cb (char-before (point)))
-	   (matching-text (and cb
-			       (char-equal (char-syntax cb) ?\})
-				 (blink-matching-open))))
-	(when matching-text (message matching-text))))
+    (show-paren-mode 1) ;; show matching paren
+    (defadvice show-paren-function
+        (after show-matching-paren-offscreen activate)
+      "If the matching paren is offscreen, show the matching line in the
+        echo area. Has no effect if the character before point is not of
+        the syntax class."
+      (interactive)
+      (let* ((cb (char-before (point)))
+             (matching-text (and cb
+                                 (char-equal (char-syntax cb) ?\})
+                                 (blink-matching-open))))
+        (when matching-text (message matching-text))))
     )
 
   (defconfig auto-indent-and-pair-parens t
@@ -346,7 +343,7 @@ confirmation when executing a code block when =C-c C-c=
     )
 
   (defconfig expand-region t
-      (check-install 'expand-region (lambda () (global-set-key (kbd "C-]") 'er/expand-region)))
+    (check-install 'expand-region (lambda () (global-set-key (kbd "C-]") 'er/expand-region)))
     )
 
   (defconfig use-writeroom t
@@ -355,43 +352,43 @@ confirmation when executing a code block when =C-c C-c=
     )
 
   (defconfig C-c-for-caps-lock t
-      (check-install 'caps-lock (lambda()
-			      (global-set-key (kbd "C-x c") 'caps-lock-mode)
-			      ))
+    (check-install 'caps-lock (lambda()
+                                (global-set-key (kbd "C-x c") 'caps-lock-mode)
+                                ))
     )
 
   (defconfig fill-column-80 t
     "Some discussions:
      - https://hackernoon.com/does-column-width-of-80-make-sense-in-2018-50c161fbdcf6
      - https://stackoverflow.com/questions/578059/studies-on-optimal-code-width"
-   (setq-default fill-column 80)
+    (setq-default fill-column 80)
     )
 #+END_SRC
 * Dired and files
 #+BEGIN_SRC emacs-lisp
-    (defconfig dired-shortcuts t
+  (defconfig dired-shortcuts t
     "Add useful command shortcuts. Press \"e\" to edit file name in-place.
   Press \"i\" to insert subdir.
   Press \"k\" to kill subdir."
-     (with-eval-after-load 'dired
-       (define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
-       (define-key dired-mode-map "k" 'dired-kill-subdir)
+    (with-eval-after-load 'dired
+      (define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
+      (define-key dired-mode-map "k" 'dired-kill-subdir)
       ))
 #+END_SRC
 
 ** Shortcut for delete file and current buffer
 #+BEGIN_SRC emacs-lisp
-(defun delete-file-and-buffer ()
-  "Kill the current buffer and deletes the file it is visiting."
-  (interactive)
-  (let ((filename (buffer-file-name)))
-    (if filename
-        (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
-            (progn
-              (delete-file filename)
-              (message "Deleted file %s." filename)
-              (kill-buffer)))
-      (message "Not a file visiting buffer!"))))
+  (defun delete-file-and-buffer ()
+    "Kill the current buffer and deletes the file it is visiting."
+    (interactive)
+    (let ((filename (buffer-file-name)))
+      (if filename
+          (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+              (progn
+                (delete-file filename)
+                (message "Deleted file %s." filename)
+                (kill-buffer)))
+        (message "Not a file visiting buffer!"))))
 #+END_SRC
 
 * Search & Jump
@@ -399,69 +396,69 @@ confirmation when executing a code block when =C-c C-c=
 
 #+BEGIN_SRC emacs-lisp
   (defconfig repeat-poping-marks t
-  "C-u C-SPC C-SPC... to keep poping marks"
+    "C-u C-SPC C-SPC... to keep poping marks"
     (setq set-mark-command-repeat-pop t)
-  )
+    )
 #+END_SRC
 
 ** C-c j to use ace-jump
 #+BEGIN_SRC emacs-lisp
   (defconfig use-ace-jump t
-  (check-install 'ace-jump-mode (lambda () (global-set-key (kbd "C-c j") 'ace-jump-mode)))
-  )
+    (check-install 'ace-jump-mode (lambda () (global-set-key (kbd "C-c j") 'ace-jump-mode)))
+    )
 #+END_SRC
 
 ** Use ag
 #+BEGIN_SRC emacs-lisp
   (defconfig use-ag t
-      (check-install 'ag (lambda ()
-                  (with-eval-after-load 'ag
-                      (message "ag config loaded")
-                      (setq ag-reuse-buffers t)
-                      (setq ag-reuse-window t))
+    (check-install 'ag (lambda ()
+                         (with-eval-after-load 'ag
+                           (message "ag config loaded")
+                           (setq ag-reuse-buffers t)
+                           (setq ag-reuse-window t))
 
-                  (defun mag/get-ag-location ()
-                    (if (or current-prefix-arg (not (boundp 'mag/last-ag-location)))
-                        (progn ;; if has prefix, as for location and remember it
-                          (message "reset memoized location")
-                          (setq mag/last-ag-location (read-directory-name "Directory: "))
-                          (setq current-prefix-arg nil) ;; unset current-prefix-arg
-                          mag/last-ag-location
-                          )
-                      mag/last-ag-location
-                      )
-                    )
-
-                  (defun mag/get-ag-string (directory)
-                    (if (use-region-p)
-                        (buffer-substring (region-beginning) (region-end))
-                      (ag/read-from-minibuffer (format "Search string in %s" directory))
-                      )
-                    )
-
-                  (defun ag-with-memory ()
-                    "ag that remembers last location where it's executed, call with prefix to forget the last searched location"
-                    (interactive)
-                    (require 'ag)
-                    (let* ((directory (mag/get-ag-location))
-                           (string (mag/get-ag-string directory))
+                         (defun mag/get-ag-location ()
+                           (if (or current-prefix-arg (not (boundp 'mag/last-ag-location)))
+                               (progn ;; if has prefix, as for location and remember it
+                                 (message "reset memoized location")
+                                 (setq mag/last-ag-location (read-directory-name "Directory: "))
+                                 (setq current-prefix-arg nil) ;; unset current-prefix-arg
+                                 mag/last-ag-location
+                                 )
+                             mag/last-ag-location
+                             )
                            )
-                      (ag/search string directory)
-                      )
-                    )
-                  (define-key global-map "\C-cs" 'ag-with-memory)
 
-                  ))
+                         (defun mag/get-ag-string (directory)
+                           (if (use-region-p)
+                               (buffer-substring (region-beginning) (region-end))
+                             (ag/read-from-minibuffer (format "Search string in %s" directory))
+                             )
+                           )
+
+                         (defun ag-with-memory ()
+                           "ag that remembers last location where it's executed, call with prefix to forget the last searched location"
+                           (interactive)
+                           (require 'ag)
+                           (let* ((directory (mag/get-ag-location))
+                                  (string (mag/get-ag-string directory))
+                                  )
+                             (ag/search string directory)
+                             )
+                           )
+                         (define-key global-map "\C-cs" 'ag-with-memory)
+
+                         ))
     )
 #+END_SRC
 * Window Management
 ** Prevent emacs from splitting windows aggresively
 http://blog.mpacula.com/2012/01/28/howto-prevent-emacs-from-splitting-windows/
 #+BEGIN_SRC emacs-lisp
-(defconfig prefer-window-split-horizontally t
-(setq split-height-threshold 1000)
-(setq split-width-threshold 100) ;; prefer split horizontally
-)
+  (defconfig prefer-window-split-horizontally t
+    (setq split-height-threshold 1000)
+    (setq split-width-threshold 100) ;; prefer split horizontally
+    )
 #+END_SRC
 
 ** Desktop save current session
@@ -469,35 +466,35 @@ Super useful function:
 - desktop-save-in-desktop-dir, will save the desktop in current working dir
 - desktop-change-dir, load the desktop file from selected folder
 #+BEGIN_SRC emacs-lisp
-(defconfig save-desktop-path t
-(setq desktop-path '("~" "~/.emacs.d/"))
-)
+  (defconfig save-desktop-path t
+    (setq desktop-path '("~" "~/.emacs.d/"))
+    )
 #+END_SRC
 
 ** F7 and F9 to switch buffer quickly
 #+BEGIN_SRC emacs-lisp
-(defconfig f7-f9-to-switch-buffer t
-  (global-set-key [f7] 'previous-buffer)
-  (global-set-key [f9] 'next-buffer)
-)
+  (defconfig f7-f9-to-switch-buffer t
+    (global-set-key [f7] 'previous-buffer)
+    (global-set-key [f9] 'next-buffer)
+    )
 #+END_SRC
 ** Winner mode
 #+BEGIN_SRC emacs-lisp
   (defconfig use-winner-mode t
-      (winner-mode 1)
-      (global-set-key (kbd "s-<left>") 'winner-undo)
-      (global-set-key (kbd "s-<right>") 'winner-redo)
-  )
+    (winner-mode 1)
+    (global-set-key (kbd "s-<left>") 'winner-undo)
+    (global-set-key (kbd "s-<right>") 'winner-redo)
+    )
 #+END_SRC
 
 ** Ace window with C-x o
 #+BEGIN_SRC emacs-lisp
-(defconfig use-ace-window t
-  (check-install 'ace-window (lambda ()
-                  (global-set-key (kbd "C-x o") 'ace-window)
-                  (global-set-key (kbd "C-c w s") 'ace-swap-window)
-  ))
-)
+  (defconfig use-ace-window t
+    (check-install 'ace-window (lambda ()
+                                 (global-set-key (kbd "C-x o") 'ace-window)
+                                 (global-set-key (kbd "C-c w s") 'ace-swap-window)
+                                 ))
+    )
 #+END_SRC
 
 ** Dedicated mode to lock a window
@@ -515,15 +512,15 @@ Super useful function:
 ** Use register-list
 #+BEGIN_SRC emacs-lisp
   (defconfig use-register-list
-      (check-install 'register-list)
-      )
+    (check-install 'register-list)
+    )
 #+END_SRC
 * Bookmark
 ** Always save bookmarks to disk
 #+BEGIN_SRC emacs-lisp
-(defconfig save-bookmarks-to-disk t
-  (setq bookmark-save-flag 1)
-)
+  (defconfig save-bookmarks-to-disk t
+    (setq bookmark-save-flag 1)
+    )
 #+END_SRC
 * Ivy
 Ivy User Manual: https://oremacs.com/swiper/.  
@@ -553,14 +550,14 @@ C-j to select current directory candidate and a start a new session.
 * Compile
 ** <f6> compile highlight errors
 #+BEGIN_SRC emacs-lisp
-(defconfig f6-to-compile t
-  ;; bug in emacs! https://groups.google.com/forum/#!topic/gnu.emacs.bug/4t3reC82lqc
-  ;; (setq compilation-auto-jump-to-first-error t)
-  (setq next-error-highlight t)
-  (setq next-error-follow-minor-mode t)
-  (add-hook 'compliation-minor-mode-hook 'next-error-follow-minor-mode)
-  (global-set-key (kbd "<f6>") 'compile)
-)
+  (defconfig f6-to-compile t
+    ;; bug in emacs! https://groups.google.com/forum/#!topic/gnu.emacs.bug/4t3reC82lqc
+    ;; (setq compilation-auto-jump-to-first-error t)
+    (setq next-error-highlight t)
+    (setq next-error-follow-minor-mode t)
+    (add-hook 'compliation-minor-mode-hook 'next-error-follow-minor-mode)
+    (global-set-key (kbd "<f6>") 'compile)
+    )
 #+END_SRC
 ** Auto-compile
 #+BEGIN_SRC emacs-lisp
@@ -577,9 +574,9 @@ C-j to select current directory candidate and a start a new session.
   (defun auto-compile-off()
     "turn off auto export pdf"
     (interactive)
-      (remove-hook 'after-save-hook
-                   'auto-compile-func t)
-      )
+    (remove-hook 'after-save-hook
+                 'auto-compile-func t)
+    )
 #+END_SRC
 * Python
 ** Anaconda and company mode
@@ -590,48 +587,48 @@ Some key concepts of style checking for python
 - flake8: a wrapper of pep8 and pyflake.
 - pylint: similar to pep8, but has more verification items and options
 #+BEGIN_SRC emacs-lisp
-(defconfig python-use-anaconda nil
+  (defconfig python-use-anaconda nil
     (check-install (list 'anaconda-mode 'company 'company-anaconda 'py-autopep8) (lambda()
-                                                    (with-eval-after-load 'python
-                                                      (message "python setup is done!!!!")
-                                                      (add-hook 'python-mode-hook
-                                                                (lambda ()
-                                                                  (flycheck-mode 1)
-                                                                  (anaconda-mode 1)
-                                                                  (company-mode 1) ;; auto complete
-                                                                  (electric-indent-local-mode -1) ;; disable auto indent, since auto indent inserts tab for empty lines. flake8 complains about it
-                                                                  (add-to-list 'company-backends 'company-anaconda) ;; add-to-list will only add when it's not there
-                                                                  (py-autopep8-enable-on-save)
-                                                                  ))
-                                                      )
-                                                    ))
-)
+                                                                                   (with-eval-after-load 'python
+                                                                                     (message "python setup is done!!!!")
+                                                                                     (add-hook 'python-mode-hook
+                                                                                               (lambda ()
+                                                                                                 (flycheck-mode 1)
+                                                                                                 (anaconda-mode 1)
+                                                                                                 (company-mode 1) ;; auto complete
+                                                                                                 (electric-indent-local-mode -1) ;; disable auto indent, since auto indent inserts tab for empty lines. flake8 complains about it
+                                                                                                 (add-to-list 'company-backends 'company-anaconda) ;; add-to-list will only add when it's not there
+                                                                                                 (py-autopep8-enable-on-save)
+                                                                                                 ))
+                                                                                     )
+                                                                                   ))
+    )
 #+END_SRC
 * C and CPP IDE
 #+BEGIN_SRC emacs-lisp
-;;  (defconfig c-use-lsp-automatically t
-;;    (defun c-setup ()
-;;      (if (locate-dominating-file "." "compile_commands.json")
-;;          (progn
-;;            (message "found compile_command.json, enabling lsp-mode")
-;;            ;;(flycheck-mode)
-;;            (lsp)
-;;            )
-;;          )
-;;      )
-;;  (check-install 'lsp-mode (lambda()
-;;    (with-eval-after-load 'cc-mode
-;;      (message "Added c-mode hooks!!!!")
-;;      (add-hook 'c-mode-hook #'c-setup)
-;;      (add-hook 'c++-mode-hook #'c-setup)
-;;    )
-;;    ))
-;;  )
+  ;;  (defconfig c-use-lsp-automatically t
+  ;;    (defun c-setup ()
+  ;;      (if (locate-dominating-file "." "compile_commands.json")
+  ;;          (progn
+  ;;            (message "found compile_command.json, enabling lsp-mode")
+  ;;            ;;(flycheck-mode)
+  ;;            (lsp)
+  ;;            )
+  ;;          )
+  ;;      )
+  ;;  (check-install 'lsp-mode (lambda()
+  ;;    (with-eval-after-load 'cc-mode
+  ;;      (message "Added c-mode hooks!!!!")
+  ;;      (add-hook 'c-mode-hook #'c-setup)
+  ;;      (add-hook 'c++-mode-hook #'c-setup)
+  ;;    )
+  ;;    ))
+  ;;  )
 #+END_SRC
 * YAML
 #+BEGIN_SRC emacs-lisp
   (defconfig use-yaml-mode t
-      (check-install 'yaml-mode)
+    (check-install 'yaml-mode)
     )
 #+END_SRC
 * Latex
@@ -661,7 +658,7 @@ Some key concepts of style checking for python
     (interactive)
     (when (eq major-mode 'org-mode)
       (remove-hook 'after-save-hook
-                'org-export-pdf-then-open t)
+                   'org-export-pdf-then-open t)
       )  
     )
 #+END_SRC
@@ -682,7 +679,7 @@ Some key concepts of style checking for python
 Enable Pandoc mode for md files.
 #+BEGIN_SRC emacs-lisp
 
-  (defconfig use-pandoc-mode
+  (defconfig use-pandoc-mode t
     (check-install 'pandoc-mode
                    (lambda () 
                      (add-hook 'markdown-mode-hook 'pandoc-mode)
@@ -703,11 +700,13 @@ To check startup-time.
 
 * Finalize emacs config initialization
 #+BEGIN_SRC emacs-lisp
-      (if my-config-initialized
+  (defconfig my-config-initialized t
+    (if my-config-initialized
         (message"already initialized, not asking")
       (progn
         (add-hook 'emacs-startup-hook (lambda ()(customize-group 'my-config)))
         )
       )
-  (customize-save-variable 'my-config-initialized t)
+    (customize-save-variable 'my-config-initialized t)
+    )
 #+END_SRC
