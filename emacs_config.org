@@ -207,11 +207,17 @@ confirmation when executing a code block when =C-c C-c=
     (xterm-mouse-mode 1)
     )
 
+  (defconfig mac-emacs-use-ls-emulation t
+    (when (string= system-type "darwin")
+      (setq ls-lisp-use-insert-directory-program nil)
+      (require 'ls-lisp)
+    ))
+
   (defconfig temp-file-to-temp-dir t
     (setq backup-directory-alist
-          `((".*" . ,temporary-file-directory)))
+	  `((".*" . ,temporary-file-directory)))
     (setq auto-save-file-name-transforms
-          `((".*" ,temporary-file-directory t)))
+	  `((".*" ,temporary-file-directory t)))
     ;; fix 'controll path too long' issue when using tramp
     (setenv "TMPDIR" "/tmp")
     )
@@ -225,19 +231,19 @@ confirmation when executing a code block when =C-c C-c=
     "Use either osc52, xclip or osx-clipboard."
     (defun clip-use-osx ()
       "Copy to osx's clipboard directly, this is useful for osx's terminal \
-               which does not support osc52"
+	       which does not support osc52"
       (interactive)
       (check-install 'osx-clipboard (lambda()
-                                      (osx-clipboard-mode +1))))
+				      (osx-clipboard-mode +1))))
 
     (defun clip-use-xclip ()
       "Copy to linux's paste board directly with xclip, need to make sure xclip \
-               is installed on the system.  This is useful only when using gnome-terminal \
-               which does not support osc52"
+	       is installed on the system.  This is useful only when using gnome-terminal \
+	       which does not support osc52"
       (interactive)
       (check-install 'xclip (lambda()
-                              (require 'xclip)
-                              (xclip-mode))))
+			      (require 'xclip)
+			      (xclip-mode))))
     (defun in-ssh ()
       (interactive)
       "if I'm in ssh"
@@ -246,20 +252,20 @@ confirmation when executing a code block when =C-c C-c=
 
     (defun clip-use-osc52 ()
       "Use osc52 to paste, should support remote terminal, even within tmux.  In \
-               unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
-               escape characters being displayed on the screen"
+	       unsupported terminals, e.g. gnome-terminal, enabling this will cause weird \
+	       escape characters being displayed on the screen"
       (interactive)
       (require 'osc52e)
       (osc52-set-cut-function))
 
     ;; OSX
     (if (string-equal system-type "darwin")
-        (clip-use-osx))
+	(clip-use-osx))
     ;; Linux
     (if (string-equal system-type "gnu/linux")
-        (if (in-ssh)
-            (clip-use-osc52)
-          (clip-use-xclip))
+	(if (in-ssh)
+	    (clip-use-osc52)
+	  (clip-use-xclip))
       )
     )
 
@@ -291,8 +297,8 @@ confirmation when executing a code block when =C-c C-c=
   (defconfig fix-shell-path-in-gui-emacs t
     "Fix PATH when executing a shell command from GUI emacs"
     (check-install 'exec-path-from-shell
-                   (lambda () (when (memq window-system '(mac ns))
-                                (exec-path-from-shell-initialize))))
+		   (lambda () (when (memq window-system '(mac ns))
+				(exec-path-from-shell-initialize))))
     )
 
   (defconfig use-recent-files-buffer t
@@ -305,9 +311,9 @@ confirmation when executing a code block when =C-c C-c=
   (defconfig gui-hide-toolbar-scrollbar t
     (setq-default frame-title-format "%b (%f)")
     (if window-system (progn
-                        (tool-bar-mode -1)
-                        (scroll-bar-mode -1)
-                        ))
+			(tool-bar-mode -1)
+			(scroll-bar-mode -1)
+			))
     )
 
   (defconfig hide-menu-bar t
@@ -324,16 +330,16 @@ confirmation when executing a code block when =C-c C-c=
   (defconfig show-matching-parens t
     (show-paren-mode 1) ;; show matching paren
     (defadvice show-paren-function
-        (after show-matching-paren-offscreen activate)
+	(after show-matching-paren-offscreen activate)
       "If the matching paren is offscreen, show the matching line in the
-        echo area. Has no effect if the character before point is not of
-        the syntax class."
+	echo area. Has no effect if the character before point is not of
+	the syntax class."
       (interactive)
       (let* ((cb (char-before (point)))
-             (matching-text (and cb
-                                 (char-equal (char-syntax cb) ?\})
-                                 (blink-matching-open))))
-        (when matching-text (message matching-text))))
+	     (matching-text (and cb
+				 (char-equal (char-syntax cb) ?\})
+				 (blink-matching-open))))
+	(when matching-text (message matching-text))))
     )
 
   (defconfig auto-indent-and-pair-parens t
@@ -357,8 +363,8 @@ confirmation when executing a code block when =C-c C-c=
 
   (defconfig C-c-for-caps-lock t
     (check-install 'caps-lock (lambda()
-                                (global-set-key (kbd "C-x c") 'caps-lock-mode)
-                                ))
+				(global-set-key (kbd "C-x c") 'caps-lock-mode)
+				))
     )
 
   (defconfig fill-column-80 t
