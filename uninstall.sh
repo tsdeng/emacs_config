@@ -1,6 +1,6 @@
 # Delete bootstrap code in ~/.emacs
 
-sed -I.old '/BEGIN load custom emacs_config.org/,/END load custom emacs_config.org/d' ~/.emacs
+sed -i.old '/BEGIN load custom emacs_config.org/,/END load custom emacs_config.org/d' ~/.emacs
 
 # Remove symbols links
 if [[ -L ~/.emacs.d/emacs_config.org ]]; then

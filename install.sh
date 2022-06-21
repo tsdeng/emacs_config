@@ -19,7 +19,7 @@ fi
 ################################
 # 3. Delete old config if any. #
 ################################
-sed -I.old '/BEGIN load custom emacs_config.org/,/END load custom emacs_config.org/d' ~/.emacs
+sed -i.old '/BEGIN load custom emacs_config.org/,/END load custom emacs_config.org/d' ~/.emacs
 
 #####################################
 # 4. Add new config bootstrap code. #
