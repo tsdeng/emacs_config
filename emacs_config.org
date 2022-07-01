@@ -367,8 +367,10 @@ confirmation when executing a code block when =C-c C-c=
     )
 
   (defconfig use-writeroom t
+    (check-install 'writeroom-mode
     (global-set-key (kbd "C-x RET") 'writeroom-mode)
     (setq writeroom-restore-window-config t)
+    )
     )
 
   (defconfig C-c-for-caps-lock t
@@ -632,17 +634,27 @@ Some key concepts of style checking for python
           (progn
             (message "found compile_command.json, enabling lsp-mode")
             ;;(flycheck-mode)
+             (setq-local company-backends
+                   '(company-capf company-files))
             (lsp)
             )
         )
       )
-    (check-install 'lsp-mode 
+    (check-install (list 'lsp-mode 'company)
                    (with-eval-after-load 'cc-mode
                      (message "Added c-mode hooks!!!!")
                      (add-hook 'c-mode-hook #'c-setup)
                      (add-hook 'c++-mode-hook #'c-setup)
                      )
                    )
+    )
+
+  (defconfig c-use-man-shortcut t
+    (with-eval-after-load 'cc-mode
+      (add-hook 'c-mode-hook (lambda()(local-set-key (kbd "C-c m") 'man)))
+      (add-hook 'c++-mode-hook (lambda()(local-set-key (kbd "C-c m") 'man)))
+
+      )
     )
 #+END_SRC
 * YAML
