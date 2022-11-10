@@ -386,6 +386,10 @@ confirmation when executing a code block when =C-c C-c=
     (setq-default fill-column 80)
     )
 #+END_SRC
+
+#+RESULTS:
+| tramp-register-archive-file-name-handler | (lambda nil (if mc-use-melpa-packages (progn (if mc-use-melpa-packages (setq package-archives '((GNU ELPA . https://elpa.gnu.org/packages/) (MELPA Stable . https://stable.melpa.org/packages/) (MELPA . https://melpa.org/packages/)) package-archive-priorities '((MELPA Stable . 10) (GNU ELPA . 5) (MELPA . 0)))) (package-initialize)))) | (lambda nil (if literate-programming-in-org (progn (eval-after-load 'org #'(lambda nil (setq org-confirm-babel-evaluate nil org-src-fontify-natively t org-src-tab-acts-natively t) (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (sql . t)))))))) | (lambda nil (if basic-term-config (progn (eval-after-load term #'(lambda nil (xterm-mouse-mode 1) (define-key term-raw-map (kbd C-c C-y) 'term-paste)))))) | (lambda nil (if f2-create-term-buffer (progn (eval-after-load compile #'(lambda nil (require 'ansi-color) (defalias 'colorize-compilation-buffer #'(lambda nil (toggle-read-only) (ansi-color-apply-on-region (point-min) (point-max)) (toggle-read-only))) (add-hook 'compilation-filter-hook 'colorize-compilation-buffer) (setq compilation-scroll-output t))) (add-hook 'term-mode-hook #'(lambda nil (set (make-local-variable 'global-hl-line-mode) nil))) (progn (ad-add-advice 'ansi-term '(advice-term-line-mode nil t (advice lambda nil (visual-line-mode -1) (goto-address-mode) (yas-minor-mode -1))) 'after 'nil) (ad-activate 'ansi-term nil) 'ansi-term) (defalias 'visit-ansi-term #'(lambda nil If the current buffer is: |
+
 * Dired and files
 #+BEGIN_SRC emacs-lisp
   (defconfig dired-shortcuts t
@@ -468,8 +472,8 @@ confirmation when executing a code block when =C-c C-c=
                        (ag/search string directory)
                        )
                      )
-                   (define-key global-map "\C-cs" 'ag-with-memory)
-
+                   ;;(define-key global-map "\C-cs" 'ag-with-memory)
+                   (define-key global-map "\C-cs" 'counsel-ag)
                    )
     )
 #+END_SRC
@@ -554,7 +558,7 @@ C-j to select current directory candidate and a start a new session.
 #+BEGIN_SRC emacs-lisp
   (defconfig use-ivy-and-counsel t
     ;; counsel will bring ivy and swiper as dependency.
-    (check-install 'counsel 
+    (check-install 'counsel
                    (counsel-mode 1)
                    (setq counsel-find-file-at-point t)
                    (setq counsel-preselect-current-file t)
@@ -717,6 +721,24 @@ Enable Pandoc mode for md files.
                    (defun pandoc-export-pdf-on-save()
                      (interactive)
                      (add-hook 'after-save-hook 'pandoc-convert-to-pdf nil t)
+                     )
+                   )
+    )
+#+END_SRC
+* Yasnippets
+#+BEGIN_SRC emacs-lisp
+  (defconfig use-yasnippets t
+    (check-install 'yasnippet
+                   (yas-global-mode 1)
+                   (if use-ivy-and-counsel
+                         (check-install 'ivy-yasnippet
+                                        (add-hook 'yas-minor-mode-hook (lambda () (progn
+                                                                              (local-set-key (kbd "<backtab>") 'ivy-yasnippet)
+                                                                              (message "ivy-yasnippet enabled for this buffer, press <backtab> for snippets!")
+                                                                              ))
+                                                  )
+                                        )
+                     nil
                      )
                    )
     )

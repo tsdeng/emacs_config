@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: set-mode-k8s
+# key: set-mode-k8s
+# --
+# -*- mode: k8s -*-

@@ -10,3 +10,7 @@ fi
 if [[ -L ~/.emacs.d/elisp ]]; then
     rm ~/.emacs.d/elisp
 fi
+
+if [[ -L ~/.emacs.d/snippets ]]; then
+    rm ~/.emacs.d/snippets
+fi

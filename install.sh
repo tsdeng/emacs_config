@@ -1,3 +1,6 @@
+SCRIPT_DIR=$(dirname $(readlink -f $0))
+echo $SCRIPT_DIR
+
 ############################################
 # 1. Link emacs_config.org to ~/.emacs.d   #
 ############################################
@@ -6,8 +9,7 @@ if [ ! -d ~/.emacs.d ]; then
     mkdir ~/.emacs.d
 fi
 
-ln -Fns $(pwd)/emacs_config.org ~/.emacs.d/emacs_config.org
-
+ln -Fns ${SCRIPT_DIR}/emacs_config.org ~/.emacs.d/emacs_config.org
 #############################################
 # 2. Modify .emacs to read emacs_config.org #
 #############################################
@@ -36,5 +38,13 @@ printf ";;BEGIN load custom emacs_config.org
 # symlink already exists, it does not follow it and create a nested #
 # link.                                                             #
 #####################################################################
-ln -Fns $(pwd)/elisp ~/.emacs.d/elisp
+ln -Fns ${SCRIPT_DIR}/elisp ~/.emacs.d/elisp
+
+
+##################################################################################
+# 6. ln snippets folder to ~/.emacs.d/snippets, the -n makes sure if the symlink #
+# already exists, it does not follow it and create a nested link.                #
+##################################################################################
+
+ln -Fns ${SCRIPT_DIR}/snippets ~/.emacs.d/snippets
 

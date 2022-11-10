@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: strict-mode
+# key: strict-mode
+# --
+set -euo pipefail
