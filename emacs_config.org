@@ -731,7 +731,7 @@ Enable Pandoc mode for md files.
     (check-install 'yasnippet
                    (yas-global-mode 1)
                    (if use-ivy-and-counsel
-                         (check-install 'ivy-yasnippet
+                         (check-install (list 'ivy-yasnippet 'yasnippet-snippets)
                                         (add-hook 'yas-minor-mode-hook (lambda () (progn
                                                                               (local-set-key (kbd "<backtab>") 'ivy-yasnippet)
                                                                               (message "ivy-yasnippet enabled for this buffer, press <backtab> for snippets!")
