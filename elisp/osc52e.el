@@ -130,14 +130,11 @@ hitting screen's max DCS length."
 ;; new version of emacs supports osc52 out of the box. But inside tmux, the osc sequence need to pass through tmux
 (defun osc52-set-cut-function ()
   "use osc52 for cut or copy no matter it's in Emacs or tmux + Emacs"
+  ; tmux can intercept osc52 command when set-clipboard is on:
+  ; https://github.com/tmux/tmux/wiki/Clipboard"
   (interactive)
-  (if (getenv "TMUX")
-      (progn (message "Emacs is launched inside tmux, setting up osc52 tmux pass through")
-             (setq interprogram-cut-function 'osc52-select-text-tmux)
-             )
-    (progn (message "Not in tmux, using osc52-select-text")
+      (progn (message "Using osc52-select-text as interprogram-cut-function")
            (setq interprogram-cut-function 'osc52-select-text)
-           )
-    ))
+           ))
 
 (provide 'osc52e)
