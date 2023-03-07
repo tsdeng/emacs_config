@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: patch-mount-volume
+# key: patch-mount-volume
+# --
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts
+  value:
+      - name: ${1:volume_name}
+        mountPath: ${2:/app}

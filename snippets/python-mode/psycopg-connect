@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: psycopg-connect
+# key: psycopg-connect
+# --
+${1:db} = psycopg.connect(dbname=${2:dbname}, user=${3:user}, password=${4:password}, host=${5:host}, autocommit=True)
+$1.row_factory = psycopg.rows.dict_row

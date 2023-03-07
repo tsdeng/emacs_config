@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: yesno
+# key: yesno
+# --
+while true; do
+read -p "${1:Do you want to proceed?} (yes/no) " yn
+case \$yn in 
+yes ) ${2:echo ok, we will proceed};
+break;;
+no ) ${3:echo exiting...};
+exit;;
+* ) echo invalid response;;
+esac
+done

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: flask-css
+# key: flask-css
+# --
+<link rel='stylesheet' href="{{ url_for("static", filename="${1:pico.min.css}") }}">

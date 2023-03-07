@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: json-patch
+# key: json-patch
+# --
+- op: ${1:add}
+  path: ${2:/path/to/change}
+  value:

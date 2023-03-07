@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: conda-forge-env-file
+# key: conda-env-file
+# --
+channels:
+- conda-forge
+dependencies:
+- python=${1:version}
+- $0
+- python-lsp-server  # For emacs lsp mode.
+- pip:  # pip dependencies go here.

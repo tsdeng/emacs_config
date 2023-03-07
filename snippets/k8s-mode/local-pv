@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: local-pv
+# key: local-pv
+# expand-env: ((yas-indent-line 'fixed))
+# --
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${1:name}-local-pv
+  labels:
+    app: $1
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: ${2:pvc_name}-${3:statefulset_name}-${4:index}  # The pv is bound to PVC.
+  hostPath:
+    path: ${5:`(file-name-directory buffer-file-name)`}

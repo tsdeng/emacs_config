@@ -1,0 +1,40 @@
+# -*- mode: snippet -*-
+# name: parse-arg
+# key: parse-arg
+# --
+
+# https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+
+function usage() {
+  cat <<EOF
+Usage: \$(basename \$0) [-h|--help]
+Description:
+        ${1:Description}
+        -h     Show help.
+EOF
+}
+
+POSITIONAL_ARGS=()
+while [[ \$# -gt 0 ]]; do
+  case \$1 in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -e|--extension)
+      EXTENSION="\$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option \$1"
+      usage
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("\$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+set -- "\${POSITIONAL_ARGS[@]}" # restore positional parameters

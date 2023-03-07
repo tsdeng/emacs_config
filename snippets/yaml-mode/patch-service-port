@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: patch-service-port
+# key: patch-service-port
+# --
+- op: add
+path: /spec/ports/0/nodePort
+value: ${0:5000}

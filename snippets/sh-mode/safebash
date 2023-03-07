@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: safebash
+# key: safebash
+# --
+#!/usr/bin/env bash
+# Safer bash tips: https://elder.dev/posts/safer-bash/
+set -o errexit
+set -o nounset
+set -o pipefail

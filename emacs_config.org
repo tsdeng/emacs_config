@@ -472,8 +472,16 @@ confirmation when executing a code block when =C-c C-c=
                        (ag/search string directory)
                        )
                      )
+                   (defun counsel-ag-select ()
+                     (interactive)
+                     (if (use-region-p)
+                         (counsel-ag (buffer-substring-no-properties (region-beginning) (region-end)))
+                       (counsel-ag)
+                       ))
+
+
                    ;;(define-key global-map "\C-cs" 'ag-with-memory)
-                   (define-key global-map "\C-cs" 'counsel-ag)
+                   (define-key global-map "\C-cs" 'counsel-ag-select)
                    )
     )
 #+END_SRC
@@ -663,9 +671,9 @@ Some key concepts of style checking for python
 #+END_SRC
 * YAML
 #+BEGIN_SRC emacs-lisp
-  (defconfig use-yaml-mode t
-    (check-install 'yaml-mode)
-    )
+    (defconfig use-yaml-mode t
+      (check-install 'yaml-mode
+      ))
 #+END_SRC
 * Latex
 ** Basic latex setup
@@ -706,6 +714,7 @@ Some key concepts of style checking for python
     (check-install 'markdown-mode
 
                    (setq markdown-header-scaling t)
+                   (setq markdown-fontify-code-blocks-natively t)
                    (add-hook 'markdown-mode-hook 'display-fill-column-indicator-mode)
                    )
     )
@@ -731,17 +740,42 @@ Enable Pandoc mode for md files.
     (check-install 'yasnippet
                    (yas-global-mode 1)
                    (if use-ivy-and-counsel
-                         (check-install (list 'ivy-yasnippet 'yasnippet-snippets)
-                                        (add-hook 'yas-minor-mode-hook (lambda () (progn
-                                                                              (local-set-key (kbd "<backtab>") 'ivy-yasnippet)
-                                                                              (message "ivy-yasnippet enabled for this buffer, press <backtab> for snippets!")
-                                                                              ))
-                                                  )
-                                        )
+                       (check-install (list 'ivy-yasnippet 'yasnippet-snippets)
+                                      (add-hook 'yas-minor-mode-hook (lambda ()
+                                                                       (progn
+                                                                         (local-set-key (kbd "<backtab>") 'ivy-yasnippet)
+                                                                         (message "ivy-yasnippet enabled for this buffer, press <backtab> for snippets!")
+                                                                         ))
+                                                )
+                                      )
                      nil
                      )
                    )
     )
+#+END_SRC
+* k8s functions
+#+BEGIN_SRC emacs-lisp
+  (defun use-k8s-mode ()
+    (interactive)
+    (beginning-of-buffer)
+    (insert "-*- mode: k8s -*-")
+    (comment-line 1)
+    (normal-mode)
+    )
+ 
+  (defun maybe-enable-k8s-mode ()
+    (interactive)
+    (if (string-match-p (regexp-quote "/k8s/") (buffer-file-name))
+        (progn (message "in k8s folder!")
+               (k8s-mode)
+               )
+
+      (message "NOT in k8s folder")
+    ))
+
+
+  (with-eval-after-load 'yaml-mode
+  (add-hook 'yaml-mode-hook 'maybe-enable-k8s-mode))
 #+END_SRC
 * Check Startup Time
 To check startup-time.

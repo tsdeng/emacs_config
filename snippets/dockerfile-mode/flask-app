@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: flask-app
+# key: flask-app
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region nil))
+# --
+# Image from https://hub.docker.com/r/condaforge/mambaforge For python3.9, the
+# mambaforge version should be locked to 4.12.0-2, otherwise you will get "can
+# not find TLS certificate error"
+FROM condaforge/mambaforge${1::latest} AS build
+WORKDIR /app
+
+# Install the environment
+COPY ./environment.yml .
+RUN mamba env update --file ./environment.yml --name base
+
+# Copy the code
+COPY . .
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "-w", "1", "--threads", "2", "--timeout", "600","--log-level=debug", "${2:app_name}:create_app()"]

@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: patch-deployment-local-volume
+# key: patch-deployment-local-volume
+# expand-env: ((yas-indent-line 'fixed))
+# --
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${1:deployment-name}
+spec:
+  template:
+    spec:
+      containers:
+      - name: $1
+        volumeMounts:
+        - mountPath: ${2:/app}
+          name: ${3:volume-name}
+      volumes:
+      - name: $3
+        hostPath:
+          path: ${4:/Users/tianshuo/workspace/codelab/k8s/web_app/guestbook-web/}
+          type: Directory

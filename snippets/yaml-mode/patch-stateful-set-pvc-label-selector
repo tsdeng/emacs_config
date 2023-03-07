@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: patch-stateful-set-pvc-label-selector
+# key: patch-stateful-set-pvc-label-selector
+# expand-env: ((yas-indent-line 'fixed))
+# --
+- op: add
+  path: /spec/volumeClaimTemplates/0/spec/selector
+  value:
+    matchLabels:
+      ${1:app}: ${2:pgsql}

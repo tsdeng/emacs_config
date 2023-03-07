@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: init-container
+# key: init-container
+# expand-env: ((yas-indent-line 'fixed))
+# --
+initContainers:
+- name: ${1:check-ready}
+  image: ${2:postgres}
+  command: ${3:['sh', '-c', 
+    'until pg_isready -h pgsql -p 5432; 
+    do echo waiting for database; sleep 2; done;']}

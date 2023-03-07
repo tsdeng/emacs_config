@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: patch-container-cmd
+# key: patch-container-cmd
+# --
+- op: add
+path: ${1:/spec/template/spec/containers/0/command}
+value: ["flask", "--debug", "--app", "${2:app_package}:create_app()", "run", "--host=0.0.0.0"]

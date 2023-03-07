@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: local-proxy
+# key: local-proxy
+# --
+from werkzeug.local import LocalProxy
+
+${1:obj} = LocalProxy(lambda: _get_$1())
+
+def _get_$1():
+    $0

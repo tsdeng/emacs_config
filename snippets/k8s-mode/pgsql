@@ -1,0 +1,61 @@
+# -*- mode: snippet -*-
+# name: pgsql
+# key: pgsql
+# expand-env: ((yas-indent-line 'fixed))
+# --
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${1:pgsql}
+spec:
+  type: ClusterIP
+  selector:
+    statefulset.kubernetes.io/pod-name: $1-0
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: $1
+spec:
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: $1
+  serviceName: $1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: $1
+    spec:
+      containers:
+      - name: $1
+        image: postgres
+        ports:
+        - containerPort: 5432
+          name: $1-port
+        env:
+        - name: POSTGRES_PASSWORD
+          value: mypassword
+        - name: POSTGRES_USER
+          value: myuser
+        - name: POSTGRES_DB
+          value: ${2:DB_NAME}
+        volumeMounts:
+        - name: $1-pvc
+          mountPath: /var/lib/postgresql/data
+          subPath: data  # GKE does not like mounting from volume root. Must use a sub folder.
+  volumeClaimTemplates:
+  - metadata:
+      name: $1-pvc
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi

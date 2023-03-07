@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: kustomize-add-patch
+# key: kustomize-add-patch
+# expand-env: ((yas-indent-line 'fixed))
+# --
+- target:
+    kind: ${1:Deployment}
+    name: ${2:deployment-name}
+  path: patch-${3:name}.yaml
