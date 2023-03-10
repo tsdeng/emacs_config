@@ -669,6 +669,28 @@ Some key concepts of style checking for python
       )
     )
 #+END_SRC
+* Python
+#+BEGIN_SRC emacs-lisp
+  (defconfig python-use-lsp-automatically t
+    (message "!!!!!!!!!loaded python-use-lsp-automatically")
+    (defun maybe-python-lsp()
+      (interactive)
+      (message "in maybe-python-lsp")
+      (if (and (getenv "CONDA_DEFAULT_ENV") (executable-find "pylsp"))
+          (progn
+            (message "Your are in a conda env")
+          (lsp))
+        (message "you are not in a conda env")
+          )
+      )
+    (check-install (list 'lsp-mode)
+                   (message "lsp-mode is installed!!")
+                   (with-eval-after-load 'python
+                     (add-hook 'python-mode-hook #'maybe-python-lsp)
+                     )
+                   )
+    )
+#+END_SRC
 * YAML
 #+BEGIN_SRC emacs-lisp
     (defconfig use-yaml-mode t
@@ -755,27 +777,30 @@ Enable Pandoc mode for md files.
 #+END_SRC
 * k8s functions
 #+BEGIN_SRC emacs-lisp
-  (defun use-k8s-mode ()
-    (interactive)
-    (beginning-of-buffer)
-    (insert "-*- mode: k8s -*-")
-    (comment-line 1)
-    (normal-mode)
-    )
- 
-  (defun maybe-enable-k8s-mode ()
-    (interactive)
-    (if (string-match-p (regexp-quote "/k8s/") (buffer-file-name))
-        (progn (message "in k8s folder!")
-               (k8s-mode)
-               )
+    (defun use-k8s-mode ()
+      (interactive)
+      (beginning-of-buffer)
+      (insert "-*- mode: k8s -*-")
+      (comment-line 1)
+      (normal-mode)
+      )
 
-      (message "NOT in k8s folder")
-    ))
-
-
-  (with-eval-after-load 'yaml-mode
-  (add-hook 'yaml-mode-hook 'maybe-enable-k8s-mode))
+  ;; Any yaml file under a `k8s` folder should have k8s-mode enabled.
+  (add-to-list 'auto-mode-alist 
+                   '("k8s/.*/.*\\.yaml\\'" . k8s-mode))
+  ;;  (defun maybe-enable-k8s-mode ()
+  ;;    (interactive)
+  ;;    (if (string-match-p (regexp-quote "/k8s/") (buffer-file-name))
+  ;;        (progn (message "in k8s folder!")
+  ;;               (k8s-mode)
+  ;;               )
+  ;;
+  ;;      (message "NOT in k8s folder")
+  ;;    ))
+  ;;
+  ;;
+  ;;  (with-eval-after-load 'yaml-mode
+  ;;  (add-hook 'yaml-mode-hook 'maybe-enable-k8s-mode))
 #+END_SRC
 * Check Startup Time
 To check startup-time.

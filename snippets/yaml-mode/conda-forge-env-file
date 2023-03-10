@@ -1,6 +1,7 @@
 # -*- mode: snippet -*-
 # name: conda-forge-env-file
 # key: conda-env-file
+# expand-env: ((yas-indent-line 'fixed))
 # --
 channels:
 - conda-forge

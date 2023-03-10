@@ -19,5 +19,5 @@ spec:
       volumes:
       - name: $3
         hostPath:
-          path: ${4:/Users/tianshuo/workspace/codelab/k8s/web_app/guestbook-web/}
+          path: ${4:`(buffer-file-name)`}
           type: Directory
