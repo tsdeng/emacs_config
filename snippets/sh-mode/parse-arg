@@ -6,12 +6,11 @@
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 
 function usage() {
-  cat <<EOF
-Usage: \$(basename \$0) [-h|--help]
-Description:
-        ${1:Description}
+  cat <<EOS
+${1:Description}
+Usage: \$(basename \$0) [options]
         -h     Show help.
-EOF
+EOS
 }
 
 POSITIONAL_ARGS=()
@@ -21,11 +20,6 @@ while [[ \$# -gt 0 ]]; do
       usage
       exit 0
       ;;
-    -e|--extension)
-      EXTENSION="\$2"
-      shift # past argument
-      shift # past value
-      ;;
     -*|--*)
       echo "Unknown option \$1"
       usage
@@ -33,8 +27,8 @@ while [[ \$# -gt 0 ]]; do
       ;;
     *)
       POSITIONAL_ARGS+=("\$1") # save positional arg
-      shift # past argument
       ;;
   esac
+  shift
 done
-set -- "\${POSITIONAL_ARGS[@]}" # restore positional parameters
+set -- "\${POSITIONAL_ARGS[@]:-}" # restore positional parameters

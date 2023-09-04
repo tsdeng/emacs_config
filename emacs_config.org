@@ -257,8 +257,8 @@ confirmation when executing a code block when =C-c C-c=
     (defun in-ssh ()
       (interactive)
       "if I'm in ssh"
-      (not (null (getenv "SSH_TTY")))
-      )
+      (or (not (null (getenv "SSH_TTY"))) (not (null (getenv "TMUX")))
+      ))
 
     (defun clip-use-osc52 ()
       "Use osc52 to paste, should support remote terminal, even within tmux.  In \

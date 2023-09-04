@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: patch-deployment-cmd
+# key: patch-deployment-cmd
+# expand-env: ((yas-indent-line 'fixed))
+# --
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${1:name}
+spec:
+  template:
+    spec:
+      containers:
+      - name: $1
+        command: [$0]

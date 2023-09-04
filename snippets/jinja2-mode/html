@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: html5
+# key: html5
+# --
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${1:Title}</title>
+    <meta name="description" content="${2:description}">
+    <!-- Pico.css (Classless version) -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.classless.min.css">
+  </head>
+
+  <body>
+  </body>
+</html>

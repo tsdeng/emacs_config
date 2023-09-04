@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: nvidia-tensorflow
+# key: nvidia-tensorflow
+# --
+FROM nvcr.io/nvidia/tensorflow:23.03-tf2-py3
