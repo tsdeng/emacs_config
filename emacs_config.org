@@ -157,9 +157,7 @@ confirmation when executing a code block when =C-c C-c=
     (with-eval-after-load "compile"
       (require 'ansi-color)
       (defun colorize-compilation-buffer ()
-        (toggle-read-only)
         (ansi-color-apply-on-region (point-min) (point-max))
-        (toggle-read-only))
       (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
       (setq compilation-scroll-output t)
       )
@@ -638,6 +636,10 @@ Some key concepts of style checking for python
     )
 
 #+END_SRC
+** pyproject mode
+#+BEGIN_SRC emacs-lisp
+  (require 'pyproject-mode)
+#+END_SRC
 * C and CPP IDE
 #+BEGIN_SRC emacs-lisp
   (defconfig c-use-lsp-automatically t
@@ -775,6 +777,28 @@ Enable Pandoc mode for md files.
                    )
     )
 #+END_SRC
+
+* Auto-insert-mode
+#+BEGIN_SRC emacs-lisp
+  ;; The trick of using autoinsert with yasnippet:
+  ;; https://howardism.org/Technical/Emacs/templates-tutorial.html
+  (defun autoinsert-yas-expand()
+    "Replace text in yasnippet template."
+    (yas-expand-snippet (buffer-string) (point-min) (point-max)))
+
+  (defconfig use-auto-insert t
+             (check-install '(yasnippet autoinsert)
+                            (setq auto-insert-directory (locate-user-emacs-file "snippets/templates"))
+                            (with-eval-after-load 'autoinsert
+                              (setq auto-insert-query nil) ;;; If you don't want to be prompted before insertion
+                              (define-auto-insert
+                                "pyproject.toml" ["pyproject.toml.template" autoinsert-yas-expand]))
+                            (auto-insert-mode t)
+                            )  ;; check-install
+             )  ;; defconfig
+
+#+END_SRC
+
 * k8s functions
 #+BEGIN_SRC emacs-lisp
     (defun use-k8s-mode ()
