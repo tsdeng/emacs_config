@@ -157,7 +157,7 @@ confirmation when executing a code block when =C-c C-c=
     (with-eval-after-load "compile"
       (require 'ansi-color)
       (defun colorize-compilation-buffer ()
-        (ansi-color-apply-on-region (point-min) (point-max))
+        (ansi-color-apply-on-region (point-min) (point-max)))
       (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
       (setq compilation-scroll-output t)
       )
