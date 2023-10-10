@@ -725,6 +725,7 @@ Enable Pandoc mode for md files.
            )
        nil ;; else
      )
+     (yas-global-mode 1)
      )
    )
 #+END_SRC
