@@ -157,6 +157,9 @@ confirmation when executing a code block when =C-c C-c=
     )
 #+END_SRC
 
+#+RESULTS:
+| org-persist-load-all | tramp-register-archive-autoload-file-name-handler | (lambda nil (if mc-use-melpa-packages (progn (if mc-use-melpa-packages (progn (setq package-archives '((GNU ELPA . https://elpa.gnu.org/packages/) (MELPA Stable . https://stable.melpa.org/packages/) (MELPA . https://melpa.org/packages/))) (setq package-archive-priorities '((MELPA Stable . 10) (GNU ELPA . 5) (MELPA . 0))))) (package-initialize)))) | (lambda nil (if literate-programming-in-org (progn (progn (defvar use-package--warning0 #'(lambda (keyword err) (let ((msg (format %s/%s: %s 'org keyword (error-message-string err)))) (display-warning 'use-package msg :error)))) (condition-case err (if (not (require 'org nil t)) (display-warning 'use-package (format Cannot load %s 'org) :error) (condition-case err (progn (progn (setq org-confirm-babel-evaluate nil) (setq org-src-fontify-natively t) (setq org-src-tab-acts-natively t)) (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (sql . t))) t) ((debug error) (funcall use-package--warning0 :config err)))) ((debug error) (funcall use-package--warning0 :catch err))))))) | (lambda nil (if basic-term-config (progn (eval-after-load term #'(lambda nil (xterm-mouse-mode 1) (define-key term-raw-map (kbd C-c C-y) 'term-paste)))))) | (lambda nil (if f2-create-term-buffer (progn (eval-after-load compile #'(lambda nil (require 'ansi-color) (defalias 'colorize-compilation-buffer #'(lambda nil (ansi-color-apply-on-region (point-min) (point-max)))) (add-hook 'compilation-filter-hook 'colorize-compilation-buffer) (setq compilation-scroll-output t))) (add-hook 'term-mode-hook #'(lambda nil (set (make-local-variable 'global-hl-line-mode) nil))) (progn (ad-add-advice 'ansi-term '(advice-term-line-mode nil t (advice lambda nil (visual-line-mode -1) (goto-address-mode) (yas-minor-mode -1))) 'after 'nil) (ad-activate 'ansi-term nil) 'ansi-term) (defalias 'visit-ansi-term #'(lambda nil If the current buffer is: |
+
 * Basic Emacs Config
 #+BEGIN_SRC emacs-lisp
   (defconfig disable-startup-screen t
@@ -624,24 +627,23 @@ Some key concepts of style checking for python
 * Python
 #+BEGIN_SRC emacs-lisp
   (defconfig python-use-lsp-automatically t
-    (message "!!!!!!!!!loaded python-use-lsp-automatically")
-    (defun maybe-python-lsp()
-      (interactive)
-      (message "in maybe-python-lsp")
-      (if (and (getenv "CONDA_DEFAULT_ENV") (executable-find "pylsp"))
-          (progn
-            (message "Your are in a conda env")
-          (lsp))
-        (message "you are not in a conda env")
-          )
-      )
-    (use-package lsp-mode :ensure t
-      :config
-      (with-eval-after-load 'python
-        (add-hook 'python-mode-hook #'maybe-python-lsp)
-        )
-      )
-    )
+             (defun maybe-python-lsp()
+               (interactive)
+               (message "in maybe-python-lsp")
+               (if (executable-find "pylsp")
+                   (progn
+                     (message "pylsp is available. Enabling lsp mode.")
+                     (lsp))
+                 (message "Can not find pylsp executable")
+                 )
+               )
+             (use-package lsp-mode :ensure t
+               :config
+               (with-eval-after-load 'python
+                 (add-hook 'python-mode-hook #'maybe-python-lsp)
+                 )
+               )
+             )
 #+END_SRC
 * YAML
 #+BEGIN_SRC emacs-lisp
