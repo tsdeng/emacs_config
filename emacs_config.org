@@ -712,22 +712,21 @@ Enable Pandoc mode for md files.
 #+END_SRC
 * Yasnippets
 #+BEGIN_SRC emacs-lisp
-  (defconfig
-   use-yasnippets t
-   (use-package yasnippet
-     :ensure t
-     :bind (("C-c y" . ivy-yasnippet))
-     :config
-     (if use-ivy-and-counsel
-         (progn
-           (use-package ivy-yasnippet)
-           (use-package yasnippet-snippets)
-           )
-       nil ;; else
+    (defconfig
+     use-yasnippets t
+     (use-package yasnippet
+       :ensure t
+       :bind (("C-c y" . ivy-yasnippet))
+       :config
+       (if use-ivy-and-counsel
+           (progn
+             (use-package yasnippet-snippets)
+             )
+         nil ;; else
+       )
+       (yas-global-mode 1)
+       )
      )
-     (yas-global-mode 1)
-     )
-   )
 #+END_SRC
 
 * Auto-insert-mode
