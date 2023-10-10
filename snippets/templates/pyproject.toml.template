@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "build"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "${1:project_name}"
+version = "${2:version}"
+authors = [
+  { name="${3:name}", email="${4:email}" },
+]
+description = "${5: description}"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies", "optional-dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = "./requirements.txt" }
+optional-dependencies = {dev = { file = "./requirements-dev.txt"}}
