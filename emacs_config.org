@@ -485,7 +485,7 @@ Super useful function:
 ** Use register-list
 #+BEGIN_SRC emacs-lisp
   (defconfig use-register-list
-             (use-package register-list)
+             (use-package register-list :ensure t)
     )
 #+END_SRC
 * Bookmark
@@ -648,7 +648,7 @@ Some key concepts of style checking for python
 * YAML
 #+BEGIN_SRC emacs-lisp
     (defconfig use-yaml-mode t
-      (use-package yaml-mode))
+      (use-package yaml-mode :ensure t))
 #+END_SRC
 * Latex
 ** Basic latex setup
@@ -720,7 +720,7 @@ Enable Pandoc mode for md files.
        :config
        (if use-ivy-and-counsel
            (progn
-             (use-package yasnippet-snippets)
+             (use-package yasnippet-snippets :ensure t)
              )
          nil ;; else
        )
