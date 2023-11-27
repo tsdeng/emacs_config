@@ -778,6 +778,17 @@ Enable Pandoc mode for md files.
   ;;  (with-eval-after-load 'yaml-mode
   ;;  (add-hook 'yaml-mode-hook 'maybe-enable-k8s-mode))
 #+END_SRC
+* Powerline
+#+BEGIN_SRC emacs-lisp
+  (defconfig
+   use-powerline t
+   (use-package powerline
+     :ensure t
+     :config
+     (powerline-default-theme)
+     )
+   )
+#+END_SRC
 * Check Startup Time
 To check startup-time.
 #+BEGIN_SRC emacs-lisp
